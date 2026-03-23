@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediCare – Appointments</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    :root {
+      --teal:        #0a7b6e;
+      --teal-light:  #12a898;
+      --teal-pale:   #e6f5f3;
+      --cream:       #f8f6f1;
+      --text:        #1a2630;
+      --muted:       #5e7180;
+      --border:      #cfe4e1;
+      --white:       #ffffff;
+      --error:       #e84b4b;
+      --warn:        #c9973b;
+      --warn-pale:   #fdf3e3;
+      --success:     #2ecc71;
+      --success-pale:#e8faf0;
+      --cancelled-bg:#fdf0f0;
+      --pending-bg:  #fdf3e3;
+      --nav-h:       72px;
+    }
+ 
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: .3;
+      pointer-events: none;
+      z-index: 0;
+    }
+ 
+    /* ══ NAV ══ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(248,246,241,.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 24px; gap: 0;
+      box-shadow: 0 2px 24px rgba(10,123,110,.07);
+    }
+    .brand { display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0;margin-right:18px; }
+    .brand-logo {
+      width:42px;height:42px;border-radius:50%;
+      background:linear-gradient(135deg,var(--teal),var(--teal-light));
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;box-shadow:0 4px 14px rgba(10,123,110,.3);flex-shrink:0;
+    }
+    .brand-name { font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--teal);letter-spacing:-.3px; }
+    .brand-sub  { font-size:10px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase; }
+    .nav-links  { display:flex;align-items:center;gap:1px;flex:1;overflow-x:auto;scrollbar-width:none; }
+    .nav-links::-webkit-scrollbar { display:none; }
+    .nav-item {
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      padding:7px 12px;border-radius:10px;cursor:pointer;
+      border:none;background:transparent;color:var(--muted);
+      font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;
+      letter-spacing:.2px;transition:all .2s;white-space:nowrap;position:relative;
+    }
+    .nav-item svg { width:16px;height:16px;stroke-width:1.8;transition:all .2s;stroke:currentColor;fill:none; }
+    .nav-item:hover { background:var(--teal-pale);color:var(--teal); }
+    .nav-item.active { background:var(--teal-pale);color:var(--teal);font-weight:600; }
+    .nav-item.active::after {
+      content:'';position:absolute;bottom:4px;
+      width:14px;height:2px;border-radius:2px;background:var(--teal);
+    }
+    .nav-right { display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px; }
+    .nav-signout {
+      padding:8px 18px;border-radius:10px;
+      border:1.8px solid var(--teal);background:transparent;color:var(--teal);
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .nav-signout:hover { background:var(--teal);color:var(--white); }
+    .nav-schema {
+      padding:8px 14px;border-radius:10px;
+      border:1.8px solid var(--border);background:var(--white);color:var(--text);
+      font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;
+      display:flex;align-items:center;gap:6px;
+    }
+    .nav-schema:hover { border-color:var(--teal);color:var(--teal); }
+    .nav-schema svg { width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8; }
+ 
+    /* ══ MAIN ══ */
+    main { position:relative;z-index:1;padding:36px 36px 80px;max-width:1280px;margin:auto; }
+ 
+    @keyframes fadeUp {
+      from { opacity:0;transform:translateY(14px); }
+      to   { opacity:1;transform:translateY(0); }
+    }
+ 
+    /* ══ PAGE HEADER ══ */
+    .page-head {
+      display:flex;align-items:flex-start;justify-content:space-between;
+      flex-wrap:wrap;gap:16px;margin-bottom:24px;
+      animation: fadeUp .45s .05s both;
+    }
+    .page-head-left h1 {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(22px,3vw,32px);font-weight:900;
+      color:var(--text);letter-spacing:-.4px;
+    }
+    .page-head-left p { font-size:13.5px;color:var(--muted);margin-top:3px; }
+ 
+    /* search */
+    .search-bar {
+      display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+    }
+    .search-input-wrap { position:relative; }
+    .search-input-wrap svg {
+      position:absolute;left:11px;top:50%;transform:translateY(-50%);
+      width:15px;height:15px;stroke:var(--muted);stroke-width:1.8;fill:none;pointer-events:none;
+    }
+    .search-input-wrap input {
+      padding:10px 14px 10px 34px;border-radius:10px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+      outline:none;transition:all .2s;width:280px;
+    }
+    .search-input-wrap input:focus {
+      border-color:var(--teal-light);box-shadow:0 0 0 3px rgba(18,168,152,.1);
+    }
+ 
+    .date-input-wrap { position:relative; }
+    .date-input-wrap svg {
+      position:absolute;left:10px;top:50%;transform:translateY(-50%);
+      width:15px;height:15px;stroke:var(--muted);stroke-width:1.8;fill:none;pointer-events:none;
+    }
+    .date-input-wrap input[type="date"] {
+      padding:10px 12px 10px 32px;border-radius:10px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+      outline:none;transition:all .2s;cursor:pointer;
+    }
+    .date-input-wrap input[type="date"]:focus {
+      border-color:var(--teal-light);box-shadow:0 0 0 3px rgba(18,168,152,.1);
+    }
+ 
+    .spec-select {
+      padding:10px 14px;border-radius:10px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);
+      outline:none;cursor:pointer;transition:all .2s;min-width:160px;
+    }
+    .spec-select:focus { border-color:var(--teal-light); }
+ 
+    .clear-btn {
+      padding:10px 18px;border-radius:10px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+      color:var(--muted);cursor:pointer;transition:all .2s;
+    }
+    .clear-btn:hover { border-color:var(--teal);color:var(--teal); }
+ 
+    /* ══ STATS ROW ══ */
+    .stats-row {
+      display:grid;grid-template-columns:repeat(5,1fr);gap:12px;
+      margin-bottom:24px;
+      animation: fadeUp .45s .12s both;
+    }
+    .stat-pill {
+      background:var(--white);border:1.5px solid var(--border);
+      border-radius:14px;padding:14px 16px;
+      display:flex;flex-direction:column;gap:4px;
+      transition:transform .2s;
+    }
+    .stat-pill:hover { transform:translateY(-2px); }
+    .stat-pill-val {
+      font-family:'Playfair Display',serif;
+      font-size:26px;font-weight:900;color:var(--text);line-height:1;
+    }
+    .stat-pill-lbl { font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px; }
+    .stat-pill.total   .stat-pill-val { color:var(--teal); }
+    .stat-pill.pending .stat-pill-val { color:var(--warn); }
+    .stat-pill.confirmed .stat-pill-val { color:var(--success); }
+    .stat-pill.cancelled .stat-pill-val { color:var(--error); }
+    .stat-pill.today   .stat-pill-val { color:#7c4dff; }
+ 
+    /* ══ FILTER TABS ══ */
+    .filter-tabs {
+      display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+      margin-bottom:22px;
+      animation: fadeUp .45s .18s both;
+    }
+    .ftab {
+      padding:7px 16px;border-radius:20px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;
+      color:var(--muted);cursor:pointer;transition:all .2s;
+    }
+    .ftab:hover { border-color:var(--teal-light);color:var(--teal); }
+    .ftab.active { background:var(--teal);border-color:var(--teal);color:var(--white);font-weight:600; }
+    .ftab.cancelled.active { background:var(--error);border-color:var(--error); }
+    .ftab.pending.active   { background:var(--warn);border-color:var(--warn); }
+    .ftab.confirmed.active { background:var(--success);border-color:var(--success); }
+ 
+    .results-count { margin-left:auto;font-size:12.5px;color:var(--muted); }
+    .results-count strong { color:var(--teal); }
+ 
+    /* ══ GRID ══ */
+    .appt-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+      gap:14px;
+      animation: fadeUp .45s .24s both;
+    }
+ 
+    /* ══ APPOINTMENT CARD ══ */
+    .appt-card {
+      background:var(--white);
+      border:1.5px solid var(--border);
+      border-radius:16px;
+      padding:18px 18px 16px;
+      display:flex;flex-direction:column;gap:10px;
+      transition:all .25s cubic-bezier(.22,.68,0,1.2);
+      animation: cardIn .35s both;
+      position:relative;overflow:hidden;
+    }
+    @keyframes cardIn {
+      from { opacity:0;transform:translateY(12px) scale(.98); }
+      to   { opacity:1;transform:translateY(0) scale(1); }
+    }
+    .appt-card:hover {
+      transform:translateY(-3px);
+      box-shadow:0 10px 30px rgba(10,123,110,.1);
+      border-color:var(--teal-light);
+    }
+ 
+    /* status stripe on left */
+    .appt-card::before {
+      content:'';
+      position:absolute;left:0;top:0;bottom:0;
+      width:4px;border-radius:4px 0 0 4px;
+    }
+    .appt-card.status-pending::before    { background:var(--warn); }
+    .appt-card.status-confirmed::before  { background:var(--success); }
+    .appt-card.status-cancelled::before  { background:var(--error); }
+    .appt-card.status-completed::before  { background:var(--teal); }
+ 
+    /* top: patient name + status badge */
+    .card-top {
+      display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+    }
+    .patient-name {
+      font-family:'Playfair Display',serif;
+      font-size:15.5px;font-weight:700;color:var(--text);line-height:1.2;
+    }
+    .status-badge {
+      padding:3px 10px;border-radius:20px;
+      font-size:10.5px;font-weight:700;letter-spacing:.4px;
+      text-transform:uppercase;flex-shrink:0;
+    }
+    .badge-pending   { background:var(--warn-pale);color:var(--warn);border:1px solid #f0d9aa; }
+    .badge-confirmed { background:var(--success-pale);color:#1a9950;border:1px solid #b3ebc9; }
+    .badge-cancelled { background:var(--cancelled-bg);color:var(--error);border:1px solid #f5bebe; }
+    .badge-completed { background:var(--teal-pale);color:var(--teal);border:1px solid var(--border); }
+ 
+    /* patient meta */
+    .patient-meta {
+      font-size:12.5px;color:var(--muted);line-height:1.7;
+    }
+    .patient-meta span { display:inline-flex;align-items:center;gap:4px; }
+ 
+    /* doctor line */
+    .doctor-line {
+      display:flex;align-items:center;gap:7px;
+      font-size:12.5px;color:var(--muted);
+      padding:7px 10px;border-radius:9px;
+      background:var(--cream);border:1px solid var(--border);
+    }
+    .doctor-line svg { width:13px;height:13px;stroke:var(--teal);fill:none;stroke-width:1.8;flex-shrink:0; }
+    .doctor-name { color:var(--teal);font-weight:600; }
+ 
+    /* fees */
+    .fees-row {
+      display:flex;align-items:center;gap:6px;
+    }
+    .fees-label { font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px; }
+    .fees-amount {
+      display:flex;align-items:center;gap:3px;
+      font-family:'Playfair Display',serif;
+      font-size:22px;font-weight:900;color:var(--text);
+    }
+    .fees-amount .rupee {
+      font-size:14px;font-weight:600;color:var(--muted);
+      font-family:'DM Sans',sans-serif;margin-top:4px;
+    }
+ 
+    /* date row */
+    .date-row {
+      display:flex;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;gap:6px;
+    }
+    .date-pill {
+      display:inline-flex;align-items:center;gap:6px;
+      padding:5px 11px;border-radius:8px;
+      background:var(--cream);border:1px solid var(--border);
+      font-size:12px;color:var(--muted);font-weight:500;
+    }
+    .date-pill svg { width:12px;height:12px;stroke:var(--muted);fill:none;stroke-width:1.8; }
+ 
+    /* action buttons */
+    .card-actions { display:flex;gap:7px;flex-wrap:wrap; }
+    .btn-cancel {
+      padding:6px 14px;border-radius:8px;
+      border:1.5px solid var(--error);color:var(--error);
+      background:transparent;font-family:'DM Sans',sans-serif;
+      font-size:11.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .btn-cancel:hover { background:var(--error);color:var(--white); }
+    .btn-admin-cancel {
+      padding:6px 14px;border-radius:8px;
+      border:1.5px solid var(--border);color:var(--muted);
+      background:transparent;font-family:'DM Sans',sans-serif;
+      font-size:11.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .btn-admin-cancel:hover { border-color:var(--warn);color:var(--warn); }
+    .btn-confirm {
+      padding:6px 14px;border-radius:8px;
+      border:1.5px solid var(--success);color:#1a9950;
+      background:transparent;font-family:'DM Sans',sans-serif;
+      font-size:11.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .btn-confirm:hover { background:var(--success);color:var(--white); }
+    .cancelled-label {
+      display:inline-flex;align-items:center;gap:5px;
+      padding:6px 14px;border-radius:8px;
+      background:var(--cancelled-bg);border:1px solid #f5bebe;
+      font-size:11.5px;font-weight:700;color:var(--error);letter-spacing:.3px;
+    }
+    .admin-cancelled-label {
+      display:inline-flex;align-items:center;gap:5px;
+      padding:6px 14px;border-radius:8px;
+      background:#fff8ee;border:1px solid #f0d9aa;
+      font-size:11.5px;font-weight:700;color:var(--warn);letter-spacing:.3px;
+    }
+ 
+    /* ══ EMPTY STATE ══ */
+    .empty-state {
+      grid-column:1/-1;
+      text-align:center;padding:72px 24px;
+      border:1.5px dashed var(--border);border-radius:18px;
+      background:var(--white);
+    }
+    .empty-icon  { font-size:54px;margin-bottom:14px;opacity:.35; }
+    .empty-title { font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px; }
+    .empty-sub   { font-size:14px;color:var(--muted); }
+ 
+    /* ══ MODAL ══ */
+    .modal-overlay {
+      position:fixed;inset:0;z-index:200;
+      background:rgba(10,38,48,.45);backdrop-filter:blur(4px);
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;pointer-events:none;transition:opacity .25s;
+    }
+    .modal-overlay.show { opacity:1;pointer-events:all; }
+    .modal {
+      background:var(--white);border-radius:20px;
+      padding:34px 30px;max-width:380px;width:90%;
+      box-shadow:0 24px 64px rgba(10,38,48,.18);
+      transform:scale(.9) translateY(20px);transition:all .28s cubic-bezier(.22,.68,0,1.2);
+    }
+    .modal-overlay.show .modal { transform:scale(1) translateY(0); }
+    .modal-icon  { font-size:38px;margin-bottom:12px;text-align:center; }
+    .modal-title { font-family:'Playfair Display',serif;font-size:20px;font-weight:800;color:var(--text);text-align:center;margin-bottom:7px; }
+    .modal-sub   { font-size:13.5px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:24px; }
+    .modal-btns  { display:flex;gap:10px; }
+    .modal-cancel-btn {
+      flex:1;padding:12px;border-radius:10px;
+      border:1.5px solid var(--border);background:transparent;
+      font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+      color:var(--muted);cursor:pointer;transition:all .2s;
+    }
+    .modal-cancel-btn:hover { border-color:var(--muted);color:var(--text); }
+    .modal-confirm-btn {
+      flex:1;padding:12px;border-radius:10px;
+      border:none;background:var(--error);
+      font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;
+      color:var(--white);cursor:pointer;transition:all .2s;
+    }
+    .modal-confirm-btn:hover { background:#c93a3a; }
+ 
+    /* ══ TOAST ══ */
+    .toast {
+      position:fixed;bottom:26px;right:26px;z-index:999;
+      padding:12px 20px;border-radius:12px;
+      font-size:13.5px;font-weight:500;
+      box-shadow:0 8px 28px rgba(0,0,0,.15);
+      transform:translateY(80px);opacity:0;
+      transition:all .33s cubic-bezier(.22,.68,0,1.2);
+      pointer-events:none;color:var(--white);
+    }
+    .toast.show { transform:translateY(0);opacity:1; }
+    .toast.success { background:var(--teal); }
+    .toast.error   { background:var(--error); }
+    .toast.warn    { background:var(--warn); }
+ 
+    @media(max-width:900px) {
+      .stats-row { grid-template-columns:repeat(3,1fr); }
+    }
+    @media(max-width:600px) {
+      main { padding:18px 12px 60px; }
+      .stats-row { grid-template-columns:1fr 1fr; }
+      .search-input-wrap input { width:100%; }
+      .search-bar { width:100%; }
+      .nav-item { padding:6px 8px;font-size:10px; }
+    }
+  </style>
+</head>
+<body>
+ 
+<!-- NAV -->
+<nav>
+  <a class="brand" href="#">
+    <div class="brand-logo">🏥</div>
+    <div>
+      <div class="brand-name">MediCare</div>
+      <div class="brand-sub">Healthcare Solutions</div>
+    </div>
+  </a>
+  <div class="nav-links" id="navLinks"></div>
+  <div class="nav-right">
+    <button class="nav-schema">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+      Add Schema
+    </button>
+    <button class="nav-signout" onclick="showToast('Signing out…','success')">Sign Out</button>
+  </div>
+</nav>
+ 
+<main>
+ 
+  <!-- Page Header + Search -->
+  <div class="page-head">
+    <div class="page-head-left">
+      <h1>Appointments</h1>
+      <p>Manage and search upcoming patient appointments</p>
+    </div>
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search doctor, patient, speciality or mobile…" oninput="applyFilters()"/>
+      </div>
+      <div class="date-input-wrap">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <input type="date" id="dateFilter" onchange="applyFilters()"/>
+      </div>
+      <select class="spec-select" id="specFilter" onchange="applyFilters()">
+        <option value="">All specialties</option>
+      </select>
+      <button class="clear-btn" onclick="clearFilters()">Clear</button>
+    </div>
+  </div>
+ 
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-pill total">
+      <div class="stat-pill-val" id="statTotal">0</div>
+      <div class="stat-pill-lbl">Total</div>
+    </div>
+    <div class="stat-pill pending">
+      <div class="stat-pill-val" id="statPending">0</div>
+      <div class="stat-pill-lbl">Pending</div>
+    </div>
+    <div class="stat-pill confirmed">
+      <div class="stat-pill-val" id="statConfirmed">0</div>
+      <div class="stat-pill-lbl">Confirmed</div>
+    </div>
+    <div class="stat-pill cancelled">
+      <div class="stat-pill-val" id="statCancelled">0</div>
+      <div class="stat-pill-lbl">Cancelled</div>
+    </div>
+    <div class="stat-pill today">
+      <div class="stat-pill-val" id="statCompleted">0</div>
+      <div class="stat-pill-lbl">Completed</div>
+    </div>
+  </div>
+ 
+  <!-- Filter Tabs -->
+  <div class="filter-tabs" id="filterTabs">
+    <button class="ftab active" data-status="all"       onclick="setTab(this,'all')">All</button>
+    <button class="ftab pending"   data-status="pending"   onclick="setTab(this,'pending')">⏳ Pending</button>
+    <button class="ftab confirmed" data-status="confirmed" onclick="setTab(this,'confirmed')">✅ Confirmed</button>
+    <button class="ftab cancelled" data-status="cancelled" onclick="setTab(this,'cancelled')">❌ Cancelled</button>
+    <button class="ftab" data-status="completed" onclick="setTab(this,'completed')">🏁 Completed</button>
+    <div class="results-count" id="resultsCount"></div>
+  </div>
+ 
+  <!-- Grid -->
+  <div class="appt-grid" id="apptGrid"></div>
+ 
+</main>
+ 
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-icon" id="modalIcon">⚠️</div>
+    <div class="modal-title" id="modalTitle">Cancel Appointment?</div>
+    <div class="modal-sub" id="modalSub">Are you sure you want to cancel this appointment?</div>
+    <div class="modal-btns">
+      <button class="modal-cancel-btn" onclick="closeModal()">Go Back</button>
+      <button class="modal-confirm-btn" onclick="confirmAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+ 
+<div class="toast" id="toast"></div>
+ 
+<script>
+/* ── NAV ── */
+const NAV = [
+  { l:'Dashboard',            a:false, i:`<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>` },
+  { l:'Add Doctor',           a:false, i:`<svg viewBox="0 0 24 24"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>` },
+  { l:'List Doctors',         a:false, i:`<svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>` },
+  { l:'Appointments',         a:true,  i:`<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>` },
+  { l:'Service Dashboard',    a:false, i:`<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>` },
+  { l:'Add Service',          a:false, i:`<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>` },
+  { l:'List Services',        a:false, i:`<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>` },
+  { l:'Service Appointments', a:false, i:`<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+];
+const navEl = document.getElementById('navLinks');
+NAV.forEach(item => {
+  const b = document.createElement('button');
+  b.className = 'nav-item' + (item.a ? ' active' : '');
+  b.innerHTML = item.i + `<span>${item.l}</span>`;
+  b.onclick = () => { navEl.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active')); b.classList.add('active'); };
+  navEl.appendChild(b);
+});
+ 
+/* ── DATA ── */
+let appointments = [
+  { id:1,  patient:'Khaled Ahmed',      age:34, gender:'Male',  phone:'6342451445', doctor:'Varshitha',      spec:'Face Care',        fee:55,  date:'2026-03-19', time:'6:14 PM', status:'cancelled',  adminCancelled:true  },
+  { id:2,  patient:'Swarnava Malakar',  age:19, gender:'Male',  phone:'9748001981', doctor:'Varshitha',      spec:'Face Care',        fee:500, date:'2026-03-12', time:'8:00 PM', status:'cancelled',  adminCancelled:true  },
+  { id:3,  patient:'Elon Jukerburg',    age:18, gender:'Other', phone:'1234567890', doctor:'Varshitha',      spec:'Face Care',        fee:500, date:'2026-03-12', time:'8:00 PM', status:'pending',    adminCancelled:false },
+  { id:4,  patient:'Ashutosh Kr.',      age:22, gender:'Male',  phone:'8540038052', doctor:'Varshilha',      spec:'Face Care',        fee:500, date:'2026-03-12', time:'8:00 PM', status:'pending',    adminCancelled:false },
+  { id:5,  patient:'Akkala Varshitha',  age:777,gender:'Female',phone:'9087654321', doctor:'Varshitha',      spec:'Face Care',        fee:500, date:'2026-03-22', time:'10:00 AM',status:'confirmed',  adminCancelled:false },
+  { id:6,  patient:'Omar Ali',          age:3,  gender:'Female',phone:'3333333333', doctor:'Ahmed',          spec:'General',          fee:300, date:'2026-03-23', time:'11:30 AM',status:'pending',    adminCancelled:false },
+  { id:7,  patient:'Mayur Mahajan',     age:24, gender:'Male',  phone:'7087720138', doctor:'Varun Pratap Singh',spec:'Stone Specialist',fee:800,date:'2026-03-24', time:'3:00 PM', status:'confirmed',  adminCancelled:false },
+  { id:8,  patient:'Anshik Suhane',     age:22, gender:'Male',  phone:'9301932210', doctor:'Ahmed',          spec:'Tooth',            fee:400, date:'2026-03-12', time:'8:00 PM', status:'pending',    adminCancelled:false },
+  { id:9,  patient:'Riya Sharma',       age:29, gender:'Female',phone:'9811223344', doctor:'Meena Sharma',   spec:'Gynecology',       fee:950, date:'2026-03-25', time:'9:00 AM', status:'confirmed',  adminCancelled:false },
+  { id:10, patient:'Dev Patel',         age:45, gender:'Male',  phone:'9922334455', doctor:'Arjun Mehta',    spec:'Cardiology',       fee:1200,date:'2026-03-26', time:'10:30 AM',status:'pending',    adminCancelled:false },
+  { id:11, patient:'Neha Gupta',        age:31, gender:'Female',phone:'9833445566', doctor:'Priya Nair',     spec:'Neurology',        fee:900, date:'2026-03-20', time:'2:00 PM', status:'completed',  adminCancelled:false },
+  { id:12, patient:'Rohan Singh',       age:38, gender:'Male',  phone:'9744556677', doctor:'Kiran Das',      spec:'Psychiatry',       fee:700, date:'2026-03-18', time:'4:00 PM', status:'completed',  adminCancelled:false },
+  { id:13, patient:'Fatima Sheikh',     age:26, gender:'Female',phone:'9655667788', doctor:'Sneha Iyer',     spec:'Pediatrics',       fee:600, date:'2026-03-28', time:'11:00 AM',status:'pending',    adminCancelled:false },
+  { id:14, patient:'Aryan Kapoor',      age:55, gender:'Male',  phone:'9566778899', doctor:'Rohan Kapoor',   spec:'Orthopedics',      fee:800, date:'2026-03-29', time:'8:30 AM', status:'confirmed',  adminCancelled:false },
+  { id:15, patient:'Sunita Mishra',     age:42, gender:'Female',phone:'9477889900', doctor:'Vikram Bose',    spec:'Ophthalmology',    fee:750, date:'2026-03-21', time:'1:00 PM', status:'cancelled',  adminCancelled:false },
+  { id:16, patient:'Tanmay Joshi',      age:17, gender:'Male',  phone:'9388990011', doctor:'Sneha Iyer',     spec:'Pediatrics',       fee:600, date:'2026-03-27', time:'12:00 PM',status:'pending',    adminCancelled:false },
+];
+ 
+let activeTab    = 'all';
+let pendingAction = null; // { id, type }
+ 
+/* ── POPULATE SPECIALTY FILTER ── */
+const specs = [...new Set(appointments.map(a=>a.spec))].sort();
+const specSel = document.getElementById('specFilter');
+specs.forEach(s => {
+  const o = document.createElement('option'); o.value=s; o.textContent=s; specSel.appendChild(o);
+});
+ 
+/* ── FILTERS ── */
+function setTab(el, val) {
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  activeTab = val;
+  applyFilters();
+}
+ 
+function applyFilters() {
+  const q    = document.getElementById('searchInput').value.trim().toLowerCase();
+  const date = document.getElementById('dateFilter').value;
+  const spec = document.getElementById('specFilter').value;
+ 
+  let list = appointments.filter(a => {
+    const matchTab  = activeTab === 'all' || a.status === activeTab;
+    const matchSpec = !spec || a.spec === spec;
+    const matchDate = !date || a.date === date;
+    const matchQ    = !q || a.patient.toLowerCase().includes(q)
+                        || a.doctor.toLowerCase().includes(q)
+                        || a.spec.toLowerCase().includes(q)
+                        || a.phone.includes(q);
+    return matchTab && matchSpec && matchDate && matchQ;
+  });
+ 
+  updateStats();
+  document.getElementById('resultsCount').innerHTML =
+    `Showing <strong>${list.length}</strong> appointment${list.length!==1?'s':''}`;
+  renderCards(list);
+}
+ 
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('dateFilter').value  = '';
+  document.getElementById('specFilter').value  = '';
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.ftab[data-status="all"]').classList.add('active');
+  activeTab = 'all';
+  applyFilters();
+}
+ 
+/* ── STATS ── */
+function updateStats() {
+  const count = s => appointments.filter(a=>a.status===s).length;
+  document.getElementById('statTotal').textContent     = appointments.length;
+  document.getElementById('statPending').textContent   = count('pending');
+  document.getElementById('statConfirmed').textContent = count('confirmed');
+  document.getElementById('statCancelled').textContent = count('cancelled');
+  document.getElementById('statCompleted').textContent = count('completed');
+}
+ 
+/* ── FORMAT DATE ── */
+function fmtDate(d, t) {
+  const dt = new Date(d);
+  return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' – ' + t;
+}
+ 
+/* ── RENDER ── */
+function renderCards(list) {
+  const grid = document.getElementById('apptGrid');
+  grid.innerHTML = '';
+ 
+  if (!list.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📅</div>
+        <div class="empty-title">No appointments found</div>
+        <div class="empty-sub">Try adjusting your search or filter criteria.</div>
+      </div>`;
+    return;
+  }
+ 
+  list.forEach((a, i) => {
+    const card = document.createElement('div');
+    card.className = `appt-card status-${a.status}`;
+    card.style.animationDelay = `${i * 0.045}s`;
+    card.dataset.id = a.id;
+ 
+    /* status badge */
+    const badgeClass = {
+      pending:'badge-pending', confirmed:'badge-confirmed',
+      cancelled:'badge-cancelled', completed:'badge-completed'
+    }[a.status] || '';
+    const badgeLabel = a.status.charAt(0).toUpperCase()+a.status.slice(1);
+ 
+    /* action buttons */
+    let actionsHTML = '';
+    if (a.status === 'cancelled') {
+      actionsHTML = `
+        <span class="cancelled-label">CANCELLED</span>
+        ${a.adminCancelled ? `<span class="admin-cancelled-label">Admin Cancelled</span>` : ''}`;
+    } else if (a.status === 'completed') {
+      actionsHTML = `<span class="cancelled-label" style="background:var(--teal-pale);color:var(--teal);border-color:var(--border);">COMPLETED</span>`;
+    } else {
+      actionsHTML = `
+        ${a.status === 'pending' ? `<button class="btn-confirm" onclick="quickAction(${a.id},'confirm')">✓ Confirm</button>` : ''}
+        <button class="btn-cancel" onclick="openModal(${a.id},'cancel')">Cancel</button>
+        <button class="btn-admin-cancel" onclick="openModal(${a.id},'admincancel')">Admin Cancel</button>`;
+    }
+ 
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="patient-name">${a.patient}</div>
+        <span class="status-badge ${badgeClass}">${badgeLabel}</span>
+      </div>
+      <div class="patient-meta">
+        <span>${a.age} yrs</span> &nbsp;:&nbsp;
+        <span>${a.gender}</span> &nbsp;:&nbsp;
+        <span>📞 ${a.phone}</span>
+      </div>
+      <div class="doctor-line">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="doctor-name">Dr. ${a.doctor}</span>
+        <span style="color:var(--border)">·</span>
+        <span>${a.spec}</span>
+      </div>
+      <div class="fees-row">
+        <span class="fees-label">Fees</span>
+        <div class="fees-amount">
+          <span class="rupee">₹</span>${a.fee}
+        </div>
+      </div>
+      <div class="date-row">
+        <div class="date-pill">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${fmtDate(a.date, a.time)}
+        </div>
+      </div>
+      <div class="card-actions">${actionsHTML}</div>`;
+ 
+    grid.appendChild(card);
+  });
+}
+ 
+/* ── QUICK CONFIRM (no modal) ── */
+function quickAction(id, type) {
+  const a = appointments.find(x=>x.id===id);
+  if (!a) return;
+  if (type === 'confirm') {
+    a.status = 'confirmed';
+    showToast(`Appointment confirmed for ${a.patient} ✓`, 'success');
+  }
+  applyFilters();
+}
+ 
+/* ── MODAL CANCEL ── */
+function openModal(id, type) {
+  pendingAction = { id, type };
+  const a = appointments.find(x=>x.id===id);
+  const isAdmin = type === 'admincancel';
+  document.getElementById('modalIcon').textContent  = isAdmin ? '🔒' : '❌';
+  document.getElementById('modalTitle').textContent = isAdmin ? 'Admin Cancel?' : 'Cancel Appointment?';
+  document.getElementById('modalSub').textContent   =
+    `${isAdmin ? 'Admin-cancel' : 'Cancel'} appointment for ${a?.patient}? This cannot be undone.`;
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('show');
+  pendingAction = null;
+}
+function confirmAction() {
+  if (!pendingAction) return;
+  const { id, type } = pendingAction;
+  const a = appointments.find(x=>x.id===id);
+  if (a) {
+    a.status = 'cancelled';
+    a.adminCancelled = (type === 'admincancel');
+    showToast(`Appointment ${type==='admincancel'?'admin-':' '}cancelled for ${a.patient}.`, 'error');
+  }
+  closeModal();
+  applyFilters();
+}
+document.getElementById('confirmModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+ 
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+ 
+/* ── INIT ── */
+updateStats();
+applyFilters();
+</script>
+<script>
+  /* ══ UNIFIED NAV ROUTING ══ */
+  (function() {
+    var NAV_ROUTES = [
+      { label: 'Dashboard', file: 'DashBoard.html', active: false },
+    { label: 'Add Doctor', file: 'Add-Doctor.html', active: false },
+    { label: 'List Doctors', file: 'list-Doctors.html', active: false },
+    { label: 'Appointments', file: 'appointments.html', active: true },
+    { label: 'Service Dashboard', file: 'Service-Dashboard.html', active: false },
+    { label: 'Add Service', file: 'Add-Service.html', active: false },
+    { label: 'List Services', file: 'list-Services.html', active: false },
+    { label: 'Service Appointments', file: 'Service-Appointments.html', active: false },
+    { label: 'Add Schema', file: 'Add-Schema.html', active: false }
+    ];
+    var navLinksEl = document.getElementById('navLinks');
+    if (!navLinksEl) return;
+    // Clear existing nav buttons and rebuild with routing
+    navLinksEl.innerHTML = '';
+    var icons = {
+      'Dashboard':            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+      'Add Doctor':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>',
+      'List Doctors':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>',
+      'Appointments':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+      'Service Dashboard':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+      'Add Service':          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>',
+      'List Services':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>',
+      'Service Appointments': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      'Add Schema':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>'
+    };
+    NAV_ROUTES.forEach(function(item) {
+      var btn = document.createElement('button');
+      btn.className = 'nav-item' + (item.active ? ' active' : '');
+      btn.innerHTML = (icons[item.label] || '') + '<span>' + item.label + '</span>';
+      btn.addEventListener('click', function() {
+        window.location.href = item.file;
+      });
+      navLinksEl.appendChild(btn);
+    });
+    // Fix Sign Out button
+    var signOutBtns = document.querySelectorAll('.nav-signout');
+    signOutBtns.forEach(function(b) {
+      b.onclick = function() {
+        if (confirm('Are you sure you want to sign out?')) {
+          window.location.href = 'HomePage.html';
+        }
+      };
+    });
+    // Fix brand logo link
+    var brandLinks = document.querySelectorAll('.brand');
+    brandLinks.forEach(function(b) { b.href = 'DashBoard.html'; });
+  })();
+  /* ══ END UNIFIED NAV ══ */
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('button, a').forEach(function(el) {
+      var txt = el.textContent.trim().toLowerCase();
+      if (txt.indexOf('service appointment') !== -1) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = 'Service-Appointments.html';
+        });
+      }
+      if (txt.indexOf('add schema') !== -1) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = 'Add-Schema.html';
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>
+ 

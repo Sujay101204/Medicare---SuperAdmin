@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediCare – Service Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    :root {
+      --teal:        #0a7b6e;
+      --teal-light:  #12a898;
+      --teal-pale:   #e6f5f3;
+      --cream:       #f8f6f1;
+      --text:        #1a2630;
+      --muted:       #5e7180;
+      --border:      #cfe4e1;
+      --white:       #ffffff;
+      --error:       #e84b4b;
+      --warn:        #c9973b;
+      --warn-pale:   #fdf3e3;
+      --success:     #2ecc71;
+      --success-pale:#e8faf0;
+      --purple:      #7c4dff;
+      --purple-pale: #f0ebff;
+      --nav-h:       72px;
+    }
+ 
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: .3;
+      pointer-events: none;
+      z-index: 0;
+    }
+ 
+    /* ══ NAV ══ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(248,246,241,.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 24px;
+      box-shadow: 0 2px 24px rgba(10,123,110,.07);
+    }
+    .brand { display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0;margin-right:18px; }
+    .brand-logo {
+      width:42px;height:42px;border-radius:50%;
+      background:linear-gradient(135deg,var(--teal),var(--teal-light));
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;box-shadow:0 4px 14px rgba(10,123,110,.3);
+    }
+    .brand-name { font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--teal);letter-spacing:-.3px; }
+    .brand-sub  { font-size:10px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase; }
+ 
+    .nav-links { display:flex;align-items:center;gap:1px;flex:1;overflow-x:auto;scrollbar-width:none; }
+    .nav-links::-webkit-scrollbar { display:none; }
+    .nav-item {
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      padding:7px 11px;border-radius:10px;cursor:pointer;
+      border:none;background:transparent;color:var(--muted);
+      font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:500;
+      white-space:nowrap;position:relative;transition:all .2s;
+    }
+    .nav-item svg { width:16px;height:16px;stroke-width:1.8;stroke:currentColor;fill:none; }
+    .nav-item:hover { background:var(--teal-pale);color:var(--teal); }
+    .nav-item.active { background:var(--teal-pale);color:var(--teal);font-weight:600; }
+    .nav-item.active::after {
+      content:'';position:absolute;bottom:4px;
+      width:14px;height:2px;border-radius:2px;background:var(--teal);
+    }
+    .nav-right { display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px; }
+    .nav-schema-btn {
+      display:flex;align-items:center;gap:7px;
+      padding:8px 16px;border-radius:10px;
+      border:1.8px solid var(--teal);background:var(--teal-pale);
+      color:var(--teal);font-family:'DM Sans',sans-serif;
+      font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;
+    }
+    .nav-schema-btn:hover { background:var(--teal);color:var(--white); }
+    .nav-schema-btn svg { width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8; }
+    .nav-signout {
+      padding:8px 18px;border-radius:10px;
+      border:1.8px solid var(--teal);background:transparent;color:var(--teal);
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .nav-signout:hover { background:var(--teal);color:var(--white); }
+ 
+    /* ══ MAIN ══ */
+    main { position:relative;z-index:1;padding:36px 40px 80px;max-width:1280px;margin:auto; }
+ 
+    @keyframes fadeUp {
+      from { opacity:0;transform:translateY(14px); }
+      to   { opacity:1;transform:translateY(0); }
+    }
+ 
+    /* ══ PAGE HEADER ══ */
+    .page-head {
+      display:flex;align-items:flex-start;justify-content:space-between;
+      flex-wrap:wrap;gap:14px;margin-bottom:28px;
+      animation: fadeUp .4s .05s both;
+    }
+    .page-head h1 {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(22px,3vw,30px);font-weight:900;color:var(--text);letter-spacing:-.4px;
+    }
+    .page-head p { font-size:13px;color:var(--muted);margin-top:3px; }
+    .add-schema-pill {
+      display:flex;align-items:center;gap:7px;
+      padding:10px 22px;border-radius:30px;
+      border:1.8px solid var(--border);background:var(--white);
+      color:var(--text);font-family:'DM Sans',sans-serif;
+      font-size:13px;font-weight:600;cursor:pointer;transition:all .22s;
+    }
+    .add-schema-pill:hover { border-color:var(--teal);color:var(--teal);box-shadow:0 4px 14px rgba(10,123,110,.1); }
+    .add-schema-pill svg { width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8; }
+ 
+    /* ══ STAT PILLS ROW ══ */
+    .stat-pills {
+      display:flex;flex-wrap:wrap;gap:12px;margin-bottom:26px;
+      animation: fadeUp .4s .1s both;
+    }
+    .stat-pill {
+      display:flex;align-items:center;gap:14px;
+      padding:14px 22px;border-radius:50px;
+      border:1.5px solid var(--border);background:var(--white);
+      min-width:160px;transition:all .22s;cursor:default;
+      box-shadow:0 2px 8px rgba(10,123,110,.04);
+    }
+    .stat-pill:hover { box-shadow:0 6px 20px rgba(10,123,110,.1);transform:translateY(-2px); }
+    .stat-icon {
+      width:40px;height:40px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .stat-icon svg { width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8; }
+    .stat-body {}
+    .stat-label { font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.3px;text-transform:uppercase; }
+    .stat-val {
+      font-family:'Playfair Display',serif;
+      font-size:22px;font-weight:900;color:var(--text);line-height:1.1;
+    }
+ 
+    /* pill colour variants */
+    .pill-services   .stat-icon { background:#fff8e1;color:var(--warn); }
+    .pill-appts      .stat-icon { background:var(--teal-pale);color:var(--teal); }
+    .pill-earning    .stat-icon { background:var(--success-pale);color:#1a9950; }
+    .pill-earning    .stat-val  { color:#1a9950; }
+    .pill-completed  .stat-icon { background:var(--teal-pale);color:var(--teal-light); }
+    .pill-cancelled  .stat-icon { background:#fdf0f0;color:var(--error); }
+    .pill-schemas    .stat-icon { background:var(--purple-pale);color:var(--purple); }
+    .pill-schemas    .stat-val  { color:var(--purple); }
+ 
+    /* ══ SEARCH ROW ══ */
+    .search-row {
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+      margin-bottom:24px;
+      animation: fadeUp .4s .16s both;
+    }
+    .search-wrap { position:relative; }
+    .search-wrap svg {
+      position:absolute;left:12px;top:50%;transform:translateY(-50%);
+      width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:1.8;pointer-events:none;
+    }
+    .search-wrap input {
+      padding:10px 14px 10px 36px;border-radius:30px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+      outline:none;transition:all .2s;width:240px;
+    }
+    .search-wrap input:focus {
+      border-color:var(--teal-light);box-shadow:0 0 0 3px rgba(18,168,152,.1);
+    }
+    .clear-pill {
+      padding:10px 20px;border-radius:30px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+      color:var(--muted);cursor:pointer;transition:all .2s;
+    }
+    .clear-pill:hover { border-color:var(--teal);color:var(--teal); }
+ 
+    /* ══ TABLE ══ */
+    .table-wrap {
+      background:var(--white);
+      border:1.5px solid var(--border);
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 4px 28px rgba(10,123,110,.06);
+      animation: fadeUp .4s .22s both;
+    }
+ 
+    table {
+      width:100%;border-collapse:collapse;
+    }
+    thead tr {
+      background:var(--teal-pale);
+      border-bottom:1.5px solid var(--border);
+    }
+    thead th {
+      padding:13px 18px;text-align:left;
+      font-size:11px;font-weight:700;color:var(--teal);
+      letter-spacing:.6px;text-transform:uppercase;
+      white-space:nowrap;
+    }
+    thead th:last-child { text-align:right; }
+ 
+    tbody tr {
+      border-bottom:1px solid var(--border);
+      transition:background .18s;
+    }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:var(--cream); }
+ 
+    tbody td {
+      padding:16px 18px;
+      font-size:13.5px;color:var(--text);
+      vertical-align:middle;
+    }
+    tbody td:last-child { text-align:right; }
+ 
+    /* service cell */
+    .svc-cell { display:flex;align-items:center;gap:14px; }
+    .svc-icon {
+      width:46px;height:46px;border-radius:12px;
+      background:linear-gradient(135deg,var(--teal-pale),rgba(18,168,152,.2));
+      display:flex;align-items:center;justify-content:center;
+      font-size:22px;flex-shrink:0;
+      border:1.5px solid var(--border);
+    }
+    .svc-name {
+      font-family:'Playfair Display',serif;
+      font-size:15px;font-weight:700;color:var(--text);
+    }
+    .svc-desc { font-size:12px;color:var(--muted);margin-top:2px; }
+ 
+    .price-val {
+      font-family:'Playfair Display',serif;
+      font-size:16px;font-weight:800;color:var(--text);
+    }
+ 
+    .num-badge {
+      display:inline-flex;align-items:center;justify-content:center;
+      min-width:28px;height:28px;border-radius:20px;padding:0 8px;
+      font-size:13px;font-weight:700;
+    }
+    .nb-appts     { background:var(--teal-pale);color:var(--teal); }
+    .nb-completed { background:var(--success-pale);color:#1a9950; }
+    .nb-cancelled { background:#fdf0f0;color:var(--error); }
+    .nb-schemas   { background:var(--purple-pale);color:var(--purple); }
+ 
+    .earning-val {
+      font-family:'Playfair Display',serif;
+      font-size:16px;font-weight:900;color:#1a9950;
+    }
+ 
+    /* row actions */
+    .row-actions { display:flex;align-items:center;justify-content:flex-end;gap:8px; }
+    .btn-edit {
+      padding:5px 14px;border-radius:8px;
+      border:1.5px solid var(--border);background:transparent;
+      color:var(--muted);font-family:'DM Sans',sans-serif;
+      font-size:11.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .btn-edit:hover { border-color:var(--teal);color:var(--teal); }
+    .btn-del {
+      padding:5px 14px;border-radius:8px;
+      border:1.5px solid var(--error);background:transparent;
+      color:var(--error);font-family:'DM Sans',sans-serif;
+      font-size:11.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .btn-del:hover { background:var(--error);color:var(--white); }
+ 
+    /* empty */
+    .empty-row td {
+      text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;
+    }
+    .empty-row .empty-icon { font-size:48px;margin-bottom:10px;opacity:.35; }
+ 
+    /* ══ DETAIL DRAWER ══ */
+    .drawer-overlay {
+      position:fixed;inset:0;z-index:150;
+      background:rgba(10,38,48,.4);backdrop-filter:blur(4px);
+      opacity:0;pointer-events:none;transition:opacity .25s;
+    }
+    .drawer-overlay.open { opacity:1;pointer-events:all; }
+    .drawer {
+      position:absolute;right:0;top:0;bottom:0;
+      width:min(480px,95vw);
+      background:var(--white);
+      box-shadow:-12px 0 48px rgba(10,38,48,.15);
+      transform:translateX(100%);transition:transform .32s cubic-bezier(.22,.68,0,1.1);
+      display:flex;flex-direction:column;overflow:hidden;
+    }
+    .drawer-overlay.open .drawer { transform:translateX(0); }
+ 
+    .drawer-head {
+      padding:24px 24px 20px;
+      border-bottom:1.5px solid var(--border);
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+      background:var(--teal-pale);
+    }
+    .drawer-title {
+      font-family:'Playfair Display',serif;
+      font-size:20px;font-weight:800;color:var(--text);
+    }
+    .drawer-sub { font-size:12.5px;color:var(--muted);margin-top:3px; }
+    .drawer-close {
+      width:32px;height:32px;border-radius:50%;
+      border:1.5px solid var(--border);background:var(--white);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;flex-shrink:0;transition:all .2s;
+    }
+    .drawer-close:hover { border-color:var(--error);color:var(--error); }
+    .drawer-close svg { width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2; }
+ 
+    .drawer-body { padding:24px;overflow-y:auto;flex:1; }
+ 
+    .d-stat-grid {
+      display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;
+    }
+    .d-stat-card {
+      background:var(--cream);border:1.5px solid var(--border);
+      border-radius:14px;padding:16px;
+    }
+    .d-stat-card-label { font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px; }
+    .d-stat-card-val {
+      font-family:'Playfair Display',serif;
+      font-size:28px;font-weight:900;color:var(--text);
+    }
+    .d-stat-card.green .d-stat-card-val  { color:#1a9950; }
+    .d-stat-card.red   .d-stat-card-val  { color:var(--error); }
+    .d-stat-card.purple .d-stat-card-val { color:var(--purple); }
+    .d-stat-card.teal  .d-stat-card-val  { color:var(--teal); }
+ 
+    .d-section-title {
+      font-size:12px;font-weight:700;color:var(--teal);
+      letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px;
+    }
+ 
+    .appt-mini-list { display:flex;flex-direction:column;gap:8px; }
+    .appt-mini {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 14px;border-radius:10px;
+      border:1px solid var(--border);background:var(--cream);
+      font-size:13px;
+    }
+    .appt-mini-name { font-weight:600;color:var(--text); }
+    .appt-mini-date { font-size:11.5px;color:var(--muted); }
+    .appt-mini-status {
+      padding:3px 9px;border-radius:20px;
+      font-size:10.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;
+    }
+    .ms-confirmed { background:var(--success-pale);color:#1a9950; }
+    .ms-pending   { background:var(--warn-pale);color:var(--warn); }
+    .ms-cancelled { background:#fdf0f0;color:var(--error); }
+    .ms-completed { background:var(--teal-pale);color:var(--teal); }
+ 
+    /* ══ MODAL ══ */
+    .modal-overlay {
+      position:fixed;inset:0;z-index:200;
+      background:rgba(10,38,48,.45);backdrop-filter:blur(4px);
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;pointer-events:none;transition:opacity .25s;
+    }
+    .modal-overlay.show { opacity:1;pointer-events:all; }
+    .modal {
+      background:var(--white);border-radius:20px;
+      padding:34px 30px;max-width:380px;width:90%;
+      transform:scale(.9) translateY(20px);transition:all .28s cubic-bezier(.22,.68,0,1.2);
+    }
+    .modal-overlay.show .modal { transform:scale(1) translateY(0); }
+    .modal-icon  { font-size:38px;text-align:center;margin-bottom:12px; }
+    .modal-title { font-family:'Playfair Display',serif;font-size:20px;font-weight:800;text-align:center;margin-bottom:7px; }
+    .modal-sub   { font-size:13.5px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:24px; }
+    .modal-btns  { display:flex;gap:10px; }
+    .modal-cancel-btn {
+      flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:transparent;
+      font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;
+    }
+    .modal-cancel-btn:hover { color:var(--text); }
+    .modal-confirm-btn {
+      flex:1;padding:12px;border-radius:10px;border:none;background:var(--error);
+      font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--white);cursor:pointer;transition:all .2s;
+    }
+    .modal-confirm-btn:hover { background:#c93a3a; }
+ 
+    /* ══ TOAST ══ */
+    .toast {
+      position:fixed;bottom:26px;right:26px;z-index:999;
+      padding:12px 20px;border-radius:12px;
+      font-size:13.5px;font-weight:500;color:var(--white);
+      box-shadow:0 8px 28px rgba(0,0,0,.15);
+      transform:translateY(80px);opacity:0;
+      transition:all .33s cubic-bezier(.22,.68,0,1.2);pointer-events:none;
+    }
+    .toast.show { transform:translateY(0);opacity:1; }
+    .toast.success { background:var(--teal); }
+    .toast.error   { background:var(--error); }
+    .toast.warn    { background:var(--warn); }
+ 
+    @media(max-width:900px){
+      main { padding:20px 16px 60px; }
+      .stat-pills { gap:8px; }
+      .stat-pill { min-width:140px;padding:12px 16px; }
+    }
+    @media(max-width:600px){
+      .stat-pill { min-width:calc(50% - 6px); border-radius:16px; }
+      table thead th:nth-child(n+5) { display:none; }
+      table tbody td:nth-child(n+5) { display:none; }
+      .nav-item { padding:6px 8px;font-size:10px; }
+    }
+  </style>
+</head>
+<body>
+ 
+<!-- NAV -->
+<nav>
+  <a class="brand" href="#">
+    <div class="brand-logo">🏥</div>
+    <div>
+      <div class="brand-name">MediCare</div>
+      <div class="brand-sub">Healthcare Solutions</div>
+    </div>
+  </a>
+  <div class="nav-links" id="navLinks"></div>
+  <div class="nav-right">
+    <button class="nav-schema-btn" onclick="showToast('Add Schema — coming soon!','warn')">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+      Add Schemas
+    </button>
+    <button class="nav-signout" onclick="showToast('Signing out…','success')">Sign Out</button>
+  </div>
+</nav>
+ 
+<main>
+ 
+  <!-- Page Header -->
+  <div class="page-head">
+    <div>
+      <h1>Service Dashboard</h1>
+      <p>Overview of services, appointments and earnings</p>
+    </div>
+    <button class="add-schema-pill" onclick="showToast('Add Schema — coming soon!','warn')">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+      Add Schema
+    </button>
+  </div>
+ 
+  <!-- Stat Pills -->
+  <div class="stat-pills" id="statPills">
+    <div class="stat-pill pill-services">
+      <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M9 2H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 2v20m0 0h10a2 2 0 0 0 2-2V8M9 22H5a2 2 0 0 1-2-2V8m0 0h18"/></svg></div>
+      <div class="stat-body">
+        <div class="stat-label">Total Services</div>
+        <div class="stat-val" id="sv-total">0</div>
+      </div>
+    </div>
+    <div class="stat-pill pill-appts">
+      <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <div class="stat-body">
+        <div class="stat-label">Total Appointments</div>
+        <div class="stat-val" id="sv-appts">0</div>
+      </div>
+    </div>
+    <div class="stat-pill pill-earning">
+      <div class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+      <div class="stat-body">
+        <div class="stat-label">Total Earning</div>
+        <div class="stat-val" id="sv-earn">₹0</div>
+      </div>
+    </div>
+    <div class="stat-pill pill-completed">
+      <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+      <div class="stat-body">
+        <div class="stat-label">Completed</div>
+        <div class="stat-val" id="sv-completed">0</div>
+      </div>
+    </div>
+    <div class="stat-pill pill-cancelled">
+      <div class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+      <div class="stat-body">
+        <div class="stat-label">Cancelled</div>
+        <div class="stat-val" id="sv-cancelled">0</div>
+      </div>
+    </div>
+    <div class="stat-pill pill-schemas">
+      <div class="stat-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg></div>
+      <div class="stat-body">
+        <div class="stat-label">Total Schemas Taken</div>
+        <div class="stat-val" id="sv-schemas">0</div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Search -->
+  <div class="search-row">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search service…" oninput="renderTable()"/>
+    </div>
+    <button class="clear-pill" onclick="clearSearch()">Clear</button>
+  </div>
+ 
+  <!-- Table -->
+  <div class="table-wrap">
+    <table id="serviceTable">
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>Price</th>
+          <th>Appointments</th>
+          <th>Completed</th>
+          <th>Cancelled</th>
+          <th>Schemas</th>
+          <th style="text-align:right">Earning</th>
+          <th style="text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+ 
+</main>
+ 
+<!-- Detail Drawer -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer(event)">
+  <div class="drawer" id="drawer">
+    <div class="drawer-head">
+      <div>
+        <div class="drawer-title" id="drawerTitle">Service Details</div>
+        <div class="drawer-sub"  id="drawerSub">Detailed view</div>
+      </div>
+      <button class="drawer-close" onclick="closeDrawerBtn()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </div>
+</div>
+ 
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">Delete Service?</div>
+    <div class="modal-sub" id="modalSub">This will permanently remove the service.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel-btn"  onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm-btn" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+ 
+<div class="toast" id="toast"></div>
+ 
+<script>
+/* ── NAV ── */
+const NAV = [
+  { l:'Dashboard',            a:false },
+  { l:'Add Doctor',           a:false },
+  { l:'List Doctors',         a:false },
+  { l:'Appointments',         a:false },
+  { l:'Service Dashboard',    a:true  },
+  { l:'Add Service',          a:false },
+  { l:'List Services',        a:false },
+  { l:'Service Appointments', a:false },
+];
+const NAV_ICONS = [
+  `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`,
+  `<svg viewBox="0 0 24 24"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>`,
+  `<svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>`,
+  `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  `<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`,
+  `<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>`,
+  `<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+];
+const navEl = document.getElementById('navLinks');
+NAV.forEach((item,i) => {
+  const b = document.createElement('button');
+  b.className = 'nav-item' + (item.a ? ' active' : '');
+  b.innerHTML = NAV_ICONS[i] + `<span>${item.l}</span>`;
+  b.onclick = () => { navEl.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active')); b.classList.add('active'); };
+  navEl.appendChild(b);
+});
+ 
+/* ── DATA ── */
+let services = [
+  {
+    id:1, name:'Booking', emoji:'📋',
+    desc:'General appointment booking service',
+    price:444,
+    appointments:[
+      { patient:'Swarnava Malakar', date:'2026-03-12', time:'8:00 PM', status:'cancelled' },
+      { patient:'Akkala Varshitha', date:'2026-03-22', time:'10:00 AM',status:'completed' },
+    ],
+    schemas: 23
+  },
+  {
+    id:2, name:'Face Care Consultation', emoji:'🧖',
+    desc:'Dermatology & cosmetic skin consultations',
+    price:500,
+    appointments:[
+      { patient:'Varshitha Reddy',  date:'2026-03-24', time:'9:00 AM', status:'confirmed' },
+      { patient:'Rohan Singh',      date:'2026-03-25', time:'11:00 AM',status:'pending'   },
+      { patient:'Elon Jukerburg',   date:'2026-03-12', time:'8:00 PM', status:'cancelled' },
+      { patient:'Ashutosh Kr.',     date:'2026-03-12', time:'8:00 PM', status:'completed' },
+    ],
+    schemas: 41
+  },
+  {
+    id:3, name:'Cardiology Check-up', emoji:'❤️',
+    desc:'Heart health assessment & ECG',
+    price:1200,
+    appointments:[
+      { patient:'Dev Patel',        date:'2026-03-26', time:'10:30 AM',status:'pending'   },
+      { patient:'Sunita Mishra',    date:'2026-03-21', time:'1:00 PM', status:'completed' },
+      { patient:'Tanmay Joshi',     date:'2026-03-27', time:'12:00 PM',status:'confirmed' },
+    ],
+    schemas: 15
+  },
+  {
+    id:4, name:'Orthopedic Session', emoji:'🦴',
+    desc:'Joint, bone & sports injury treatment',
+    price:800,
+    appointments:[
+      { patient:'Aryan Kapoor',     date:'2026-03-29', time:'8:30 AM', status:'confirmed' },
+      { patient:'Omar Ali',         date:'2026-03-23', time:'11:30 AM',status:'pending'   },
+    ],
+    schemas: 9
+  },
+  {
+    id:5, name:'Dental Care', emoji:'🦷',
+    desc:'Tooth examination, cleaning & treatment',
+    price:400,
+    appointments:[
+      { patient:'Anshik Suhane',    date:'2026-03-12', time:'8:00 PM', status:'pending'   },
+      { patient:'Fatima Sheikh',    date:'2026-03-28', time:'11:00 AM',status:'confirmed' },
+      { patient:'Neha Gupta',       date:'2026-03-20', time:'2:00 PM', status:'completed' },
+      { patient:'Mayur Mahajan',    date:'2026-03-24', time:'3:00 PM', status:'cancelled' },
+    ],
+    schemas: 31
+  },
+];
+ 
+let deleteTargetId = null;
+ 
+/* ── STATS ── */
+function computeStats() {
+  let totalAppts=0, totalEarn=0, totalCompleted=0, totalCancelled=0, totalSchemas=0;
+  services.forEach(s => {
+    const c = countStatus(s);
+    totalAppts     += s.appointments.length;
+    totalCompleted += c.completed;
+    totalCancelled += c.cancelled;
+    totalSchemas   += s.schemas;
+    totalEarn      += c.completed * s.price;
+  });
+  animateCount('sv-total',     services.length, '');
+  animateCount('sv-appts',     totalAppts,       '');
+  animateCount('sv-earn',      totalEarn,        '₹');
+  animateCount('sv-completed', totalCompleted,   '');
+  animateCount('sv-cancelled', totalCancelled,   '');
+  animateCount('sv-schemas',   totalSchemas,     '');
+}
+ 
+function animateCount(id, target, prefix) {
+  const el = document.getElementById(id);
+  const dur = 900, step = target / (dur/16);
+  let cur = 0;
+  const t = setInterval(() => {
+    cur = Math.min(cur + step, target);
+    el.textContent = prefix + Math.floor(cur).toLocaleString();
+    if (cur >= target) clearInterval(t);
+  }, 16);
+}
+ 
+function countStatus(s) {
+  const res = { completed:0, cancelled:0, confirmed:0, pending:0 };
+  s.appointments.forEach(a => { if (res[a.status] !== undefined) res[a.status]++; });
+  return res;
+}
+ 
+/* ── TABLE ── */
+function renderTable() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const list = services.filter(s => !q || s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q));
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+ 
+  if (!list.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">
+      <div class="empty-icon">🔍</div>
+      <div>No services match your search.</div>
+    </td></tr>`;
+    return;
+  }
+ 
+  list.forEach((s, i) => {
+    const c = countStatus(s);
+    const earning = c.completed * s.price;
+    const tr = document.createElement('tr');
+    tr.style.animationDelay = `${i * .05}s`;
+    tr.innerHTML = `
+      <td>
+        <div class="svc-cell">
+          <div class="svc-icon">${s.emoji}</div>
+          <div>
+            <div class="svc-name">${s.name}</div>
+            <div class="svc-desc">${s.desc}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="price-val">₹${s.price.toLocaleString()}</span></td>
+      <td><span class="num-badge nb-appts">${s.appointments.length}</span></td>
+      <td><span class="num-badge nb-completed">${c.completed}</span></td>
+      <td><span class="num-badge nb-cancelled">${c.cancelled}</span></td>
+      <td><span class="num-badge nb-schemas">${s.schemas}</span></td>
+      <td><span class="earning-val">₹${earning.toLocaleString()}</span></td>
+      <td>
+        <div class="row-actions">
+          <button class="btn-edit" onclick="openDrawer(${s.id})">Details</button>
+          <button class="btn-del"  onclick="openModal(${s.id})">Delete</button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+ 
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  renderTable();
+}
+ 
+/* ── DRAWER ── */
+function openDrawer(id) {
+  const s = services.find(x => x.id === id);
+  if (!s) return;
+  const c = countStatus(s);
+  const earning = c.completed * s.price;
+ 
+  document.getElementById('drawerTitle').textContent = s.name;
+  document.getElementById('drawerSub').textContent   = s.desc;
+ 
+  document.getElementById('drawerBody').innerHTML = `
+    <div class="d-stat-grid">
+      <div class="d-stat-card teal">
+        <div class="d-stat-card-label">Appointments</div>
+        <div class="d-stat-card-val">${s.appointments.length}</div>
+      </div>
+      <div class="d-stat-card green">
+        <div class="d-stat-card-label">Total Earning</div>
+        <div class="d-stat-card-val">₹${earning.toLocaleString()}</div>
+      </div>
+      <div class="d-stat-card green">
+        <div class="d-stat-card-label">Completed</div>
+        <div class="d-stat-card-val">${c.completed}</div>
+      </div>
+      <div class="d-stat-card red">
+        <div class="d-stat-card-label">Cancelled</div>
+        <div class="d-stat-card-val">${c.cancelled}</div>
+      </div>
+      <div class="d-stat-card">
+        <div class="d-stat-card-label">Confirmed</div>
+        <div class="d-stat-card-val">${c.confirmed}</div>
+      </div>
+      <div class="d-stat-card purple">
+        <div class="d-stat-card-label">Schemas Taken</div>
+        <div class="d-stat-card-val">${s.schemas}</div>
+      </div>
+    </div>
+ 
+    <div class="d-section-title">Appointment History</div>
+    <div class="appt-mini-list">
+      ${s.appointments.length ? s.appointments.map(a => `
+        <div class="appt-mini">
+          <div>
+            <div class="appt-mini-name">${a.patient}</div>
+            <div class="appt-mini-date">${fmtDate(a.date)} · ${a.time}</div>
+          </div>
+          <span class="appt-mini-status ms-${a.status}">${a.status}</span>
+        </div>`).join('') : '<div style="color:var(--muted);font-size:13px;">No appointments yet.</div>'}
+    </div>`;
+ 
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+ 
+function closeDrawer(e) {
+  if (e.target === document.getElementById('drawerOverlay')) closeDrawerBtn();
+}
+function closeDrawerBtn() {
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+ 
+function fmtDate(d) {
+  return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+ 
+/* ── DELETE MODAL ── */
+function openModal(id) {
+  deleteTargetId = id;
+  const s = services.find(x=>x.id===id);
+  document.getElementById('modalSub').textContent = `Delete "${s?.name}"? All related data will be lost.`;
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('show');
+  deleteTargetId = null;
+}
+function confirmDelete() {
+  const s = services.find(x=>x.id===deleteTargetId);
+  services = services.filter(x=>x.id!==deleteTargetId);
+  closeModal();
+  computeStats();
+  renderTable();
+  showToast(`"${s?.name}" deleted.`, 'error');
+}
+document.getElementById('confirmModal').addEventListener('click', e => {
+  if (e.target===e.currentTarget) closeModal();
+});
+ 
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+ 
+/* ── INIT ── */
+computeStats();
+renderTable();
+</script>
+<script>
+  /* ══ UNIFIED NAV ROUTING ══ */
+  (function() {
+    var NAV_ROUTES = [
+      { label: 'Dashboard', file: 'DashBoard.html', active: false },
+    { label: 'Add Doctor', file: 'Add-Doctor.html', active: false },
+    { label: 'List Doctors', file: 'list-Doctors.html', active: false },
+    { label: 'Appointments', file: 'appointments.html', active: false },
+    { label: 'Service Dashboard', file: 'Service-Dashboard.html', active: true },
+    { label: 'Add Service', file: 'Add-Service.html', active: false },
+    { label: 'List Services', file: 'list-Services.html', active: false },
+    { label: 'Service Appointments', file: 'Service-Appointments.html', active: false },
+    { label: 'Add Schema', file: 'Add-Schema.html', active: false }
+    ];
+    var navLinksEl = document.getElementById('navLinks');
+    if (!navLinksEl) return;
+    // Clear existing nav buttons and rebuild with routing
+    navLinksEl.innerHTML = '';
+    var icons = {
+      'Dashboard':            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+      'Add Doctor':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>',
+      'List Doctors':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>',
+      'Appointments':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+      'Service Dashboard':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+      'Add Service':          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>',
+      'List Services':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>',
+      'Service Appointments': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      'Add Schema':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>'
+    };
+    NAV_ROUTES.forEach(function(item) {
+      var btn = document.createElement('button');
+      btn.className = 'nav-item' + (item.active ? ' active' : '');
+      btn.innerHTML = (icons[item.label] || '') + '<span>' + item.label + '</span>';
+      btn.addEventListener('click', function() {
+        window.location.href = item.file;
+      });
+      navLinksEl.appendChild(btn);
+    });
+    // Fix Sign Out button
+    var signOutBtns = document.querySelectorAll('.nav-signout');
+    signOutBtns.forEach(function(b) {
+      b.onclick = function() {
+        if (confirm('Are you sure you want to sign out?')) {
+          window.location.href = 'HomePage.html';
+        }
+      };
+    });
+    // Fix brand logo link
+    var brandLinks = document.querySelectorAll('.brand');
+    brandLinks.forEach(function(b) { b.href = 'DashBoard.html'; });
+  })();
+  /* ══ END UNIFIED NAV ══ */
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('button, a').forEach(function(el) {
+      var txt = el.textContent.trim().toLowerCase();
+      if (txt.indexOf('add schema') !== -1) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = 'Add-Schema.html';
+        });
+      }
+      if (txt.indexOf('add service') !== -1) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = 'Add-Service.html';
+        });
+      }
+    });
+    // Make service rows clickable to list-Services
+    document.querySelectorAll('tbody tr').forEach(function(row) {
+      row.style.cursor = 'pointer';
+      row.addEventListener('dblclick', function() {
+        window.location.href = 'list-Services.html';
+      });
+    });
+  });
+</script>
+</body>
+</html>

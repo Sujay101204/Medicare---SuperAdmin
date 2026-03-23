@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediCare – List Services</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    :root {
+      --teal:        #0a7b6e;
+      --teal-light:  #12a898;
+      --teal-pale:   #e6f5f3;
+      --cream:       #f8f6f1;
+      --text:        #1a2630;
+      --muted:       #5e7180;
+      --border:      #cfe4e1;
+      --white:       #ffffff;
+      --error:       #e84b4b;
+      --warn:        #c9973b;
+      --success:     #2ecc71;
+      --nav-h:       72px;
+    }
+ 
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: .3;
+      pointer-events: none;
+      z-index: 0;
+    }
+ 
+    /* ══ NAV ══ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(248,246,241,.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 24px;
+      box-shadow: 0 2px 24px rgba(10,123,110,.07);
+    }
+    .brand { display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0;margin-right:18px; }
+    .brand-logo {
+      width:42px;height:42px;border-radius:50%;
+      background:linear-gradient(135deg,var(--teal),var(--teal-light));
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;box-shadow:0 4px 14px rgba(10,123,110,.3);
+    }
+    .brand-name { font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--teal); }
+    .brand-sub  { font-size:10px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase; }
+    .nav-links  { display:flex;align-items:center;gap:1px;flex:1;overflow-x:auto;scrollbar-width:none; }
+    .nav-links::-webkit-scrollbar { display:none; }
+    .nav-item {
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      padding:7px 11px;border-radius:10px;cursor:pointer;
+      border:none;background:transparent;color:var(--muted);
+      font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:500;
+      white-space:nowrap;position:relative;transition:all .2s;
+    }
+    .nav-item svg { width:16px;height:16px;stroke-width:1.8;stroke:currentColor;fill:none; }
+    .nav-item:hover { background:var(--teal-pale);color:var(--teal); }
+    .nav-item.active { background:var(--teal-pale);color:var(--teal);font-weight:600; }
+    .nav-item.active::after {
+      content:'';position:absolute;bottom:4px;
+      width:14px;height:2px;border-radius:2px;background:var(--teal);
+    }
+    .nav-right { display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px; }
+    .nav-schema-btn {
+      padding:8px 16px;border-radius:10px;
+      border:1.8px solid var(--border);background:var(--white);
+      color:var(--text);font-family:'DM Sans',sans-serif;
+      font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;
+      display:flex;align-items:center;gap:6px;
+    }
+    .nav-schema-btn svg { width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8; }
+    .nav-schema-btn:hover { border-color:var(--teal);color:var(--teal); }
+    .nav-signout {
+      padding:8px 18px;border-radius:10px;
+      border:1.8px solid var(--teal);background:transparent;color:var(--teal);
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .nav-signout:hover { background:var(--teal);color:var(--white); }
+ 
+    /* ══ MAIN ══ */
+    main { position:relative;z-index:1;padding:40px 40px 80px;max-width:1100px;margin:auto; }
+ 
+    @keyframes fadeUp {
+      from { opacity:0;transform:translateY(14px); }
+      to   { opacity:1;transform:translateY(0); }
+    }
+    @keyframes expandDown {
+      from { opacity:0;transform:translateY(-8px); }
+      to   { opacity:1;transform:translateY(0); }
+    }
+ 
+    /* ══ TOP BAR ══ */
+    .topbar {
+      display:flex;align-items:flex-start;justify-content:space-between;
+      flex-wrap:wrap;gap:16px;margin-bottom:28px;
+      animation: fadeUp .45s .05s both;
+    }
+    .topbar-left h1 {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(24px,3vw,34px);font-weight:900;color:var(--text);letter-spacing:-.4px;
+    }
+    .topbar-left p { font-size:13px;color:var(--muted);margin-top:4px; }
+ 
+    .topbar-right { display:flex;flex-direction:column;gap:10px;align-items:flex-end; }
+ 
+    /* filter tabs */
+    .filter-tabs {
+      display:flex;align-items:center;gap:0;
+      border:1.5px solid var(--border);border-radius:30px;
+      background:var(--white);overflow:hidden;
+    }
+    .ftab {
+      padding:8px 20px;border:none;background:transparent;
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;
+      color:var(--muted);cursor:pointer;transition:all .2s;
+      position:relative;
+    }
+    .ftab:not(:last-child)::after {
+      content:'';position:absolute;right:0;top:20%;bottom:20%;
+      width:1px;background:var(--border);
+    }
+    .ftab:hover { color:var(--teal); }
+    .ftab.active { background:var(--teal);color:var(--white);font-weight:600; }
+    .ftab.active.avail  { background:var(--teal); }
+    .ftab.active.unavail { background:var(--error); }
+ 
+    /* search */
+    .search-wrap { position:relative; }
+    .search-wrap svg {
+      position:absolute;left:14px;top:50%;transform:translateY(-50%);
+      width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:1.8;pointer-events:none;
+    }
+    .search-wrap input {
+      padding:10px 16px 10px 38px;border-radius:30px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+      outline:none;transition:all .2s;width:260px;
+    }
+    .search-wrap input:focus {
+      border-color:var(--teal-light);box-shadow:0 0 0 3px rgba(18,168,152,.1);
+    }
+ 
+    /* results info */
+    .results-info {
+      font-size:12.5px;color:var(--muted);margin-bottom:16px;
+      animation: fadeUp .45s .15s both;
+    }
+    .results-info strong { color:var(--teal); }
+ 
+    /* ══ SERVICES LIST ══ */
+    .services-list {
+      display:flex;flex-direction:column;gap:14px;
+    }
+ 
+    /* ── service card ── */
+    .svc-card {
+      background:var(--white);
+      border:1.5px solid var(--border);
+      border-radius:18px;
+      overflow:hidden;
+      transition:all .25s cubic-bezier(.22,.68,0,1.2);
+      animation: fadeUp .4s both;
+    }
+    .svc-card:hover {
+      box-shadow:0 8px 32px rgba(10,123,110,.09);
+      border-color:var(--teal-light);
+    }
+ 
+    /* collapsed header row */
+    .svc-header {
+      display:flex;align-items:center;gap:16px;
+      padding:18px 20px;cursor:pointer;
+    }
+ 
+    /* thumbnail */
+    .svc-thumb {
+      width:62px;height:62px;border-radius:12px;
+      overflow:hidden;border:1.5px solid var(--border);
+      flex-shrink:0;background:var(--teal-pale);
+      display:flex;align-items:center;justify-content:center;
+      font-size:28px;
+    }
+    .svc-thumb img { width:100%;height:100%;object-fit:cover; }
+ 
+    /* name block */
+    .svc-info { flex:1;min-width:0; }
+    .svc-name {
+      font-family:'Playfair Display',serif;
+      font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.2px;
+      margin-bottom:3px;
+    }
+    .svc-desc-short { font-size:13px;color:var(--muted);margin-bottom:4px; }
+    .svc-slot-count {
+      display:inline-flex;align-items:center;gap:5px;
+      font-size:12px;color:var(--muted);
+    }
+    .svc-slot-count svg { width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:1.8; }
+ 
+    /* right side */
+    .svc-right {
+      display:flex;align-items:center;gap:14px;flex-shrink:0;
+    }
+    .svc-price {
+      font-family:'Playfair Display',serif;
+      font-size:22px;font-weight:900;color:var(--text);
+      display:flex;align-items:flex-start;gap:2px;
+    }
+    .svc-price .rupee {
+      font-size:14px;font-weight:600;color:var(--muted);
+      font-family:'DM Sans',sans-serif;margin-top:5px;
+    }
+ 
+    .avail-badge {
+      display:inline-flex;align-items:center;gap:5px;
+      padding:5px 13px;border-radius:20px;
+      font-size:11.5px;font-weight:700;letter-spacing:.3px;
+      flex-shrink:0;
+    }
+    .avail-badge::before {
+      content:'';width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block;
+    }
+    .badge-available   { background:rgba(46,204,113,.12);color:#1a9950;border:1px solid rgba(46,204,113,.3); }
+    .badge-unavailable { background:#fdf0f0;color:var(--error);border:1px solid rgba(232,75,75,.2); }
+ 
+    .expand-btn {
+      width:34px;height:34px;border-radius:50%;
+      border:1.5px solid var(--border);background:var(--cream);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:all .25s;flex-shrink:0;
+    }
+    .expand-btn svg { width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2.2;transition:transform .3s; }
+    .expand-btn:hover { border-color:var(--teal);background:var(--teal-pale); }
+    .expand-btn:hover svg { stroke:var(--teal); }
+    .svc-card.expanded .expand-btn { border-color:var(--teal);background:var(--teal-pale); }
+    .svc-card.expanded .expand-btn svg { stroke:var(--teal);transform:rotate(180deg); }
+ 
+    /* ── expanded detail panel ── */
+    .svc-detail {
+      max-height:0;overflow:hidden;
+      transition:max-height .4s cubic-bezier(.22,.68,0,1.1);
+      border-top:0px solid var(--border);
+    }
+    .svc-card.expanded .svc-detail {
+      max-height:600px;
+      border-top:1.5px solid var(--border);
+    }
+ 
+    .detail-inner { padding:22px 22px 8px; }
+ 
+    .detail-section { margin-bottom:18px; }
+    .detail-section-title {
+      font-size:13px;font-weight:800;color:var(--text);
+      margin-bottom:8px;display:flex;align-items:center;gap:7px;
+    }
+    .detail-section-title svg { width:14px;height:14px;stroke:var(--teal);fill:none;stroke-width:2; }
+ 
+    .about-text { font-size:13.5px;color:var(--muted);line-height:1.7; }
+ 
+    .instr-list {
+      list-style:none;display:flex;flex-direction:column;gap:6px;
+    }
+    .instr-list li {
+      display:flex;align-items:flex-start;gap:9px;
+      font-size:13.5px;color:var(--text);line-height:1.5;
+    }
+    .instr-num {
+      min-width:22px;height:22px;border-radius:50%;
+      background:var(--teal);color:var(--white);
+      font-size:10px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+    }
+ 
+    .slots-wrap { display:flex;flex-wrap:wrap;gap:8px; }
+    .slot-pill {
+      display:inline-flex;align-items:center;gap:6px;
+      padding:5px 13px;border-radius:20px;
+      background:var(--teal-pale);border:1px solid var(--border);
+      font-size:12px;color:var(--teal);font-weight:500;
+    }
+    .slot-pill svg { width:12px;height:12px;stroke:var(--teal);fill:none;stroke-width:1.8; }
+ 
+    /* action buttons */
+    .detail-actions {
+      display:flex;justify-content:flex-end;gap:10px;
+      padding:12px 22px 18px;
+    }
+    .btn-edit {
+      display:flex;align-items:center;gap:7px;
+      padding:9px 22px;border-radius:30px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+      color:var(--muted);cursor:pointer;transition:all .22s;
+    }
+    .btn-edit svg { width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8; }
+    .btn-edit:hover { border-color:var(--teal);color:var(--teal);background:var(--teal-pale); }
+    .btn-remove {
+      display:flex;align-items:center;gap:7px;
+      padding:9px 22px;border-radius:30px;
+      border:1.5px solid var(--error);background:transparent;
+      font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+      color:var(--error);cursor:pointer;transition:all .22s;
+    }
+    .btn-remove svg { width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8; }
+    .btn-remove:hover { background:var(--error);color:var(--white); }
+ 
+    /* ══ EMPTY STATE ══ */
+    .empty-state {
+      text-align:center;padding:80px 24px;
+      border:1.5px dashed var(--border);border-radius:18px;
+      background:var(--white);
+      animation: fadeUp .4s both;
+    }
+    .empty-icon  { font-size:56px;margin-bottom:14px;opacity:.35; }
+    .empty-title { font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px; }
+    .empty-sub   { font-size:14px;color:var(--muted); }
+ 
+    /* ══ EDIT MODAL ══ */
+    .modal-overlay {
+      position:fixed;inset:0;z-index:200;
+      background:rgba(10,38,48,.45);backdrop-filter:blur(5px);
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;pointer-events:none;transition:opacity .25s;
+      padding:20px;
+    }
+    .modal-overlay.show { opacity:1;pointer-events:all; }
+    .modal {
+      background:var(--white);border-radius:22px;
+      padding:32px;max-width:520px;width:100%;
+      box-shadow:0 24px 64px rgba(10,38,48,.2);
+      transform:scale(.9) translateY(20px);transition:all .28s cubic-bezier(.22,.68,0,1.2);
+      max-height:90vh;overflow-y:auto;
+    }
+    .modal-overlay.show .modal { transform:scale(1) translateY(0); }
+    .modal-head {
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:24px;
+    }
+    .modal-title { font-family:'Playfair Display',serif;font-size:22px;font-weight:800;color:var(--text); }
+    .modal-close {
+      width:34px;height:34px;border-radius:50%;
+      border:1.5px solid var(--border);background:var(--cream);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:all .2s;
+    }
+    .modal-close:hover { border-color:var(--error); }
+    .modal-close svg { width:14px;height:14px;stroke:var(--muted);fill:none;stroke-width:2.2; }
+ 
+    .m-fg { display:flex;flex-direction:column;gap:6px;margin-bottom:16px; }
+    .m-fg label { font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase; }
+    .m-fg input, .m-fg select, .m-fg textarea {
+      width:100%;padding:10px 14px;border-radius:10px;
+      border:1.5px solid var(--border);background:var(--cream);
+      font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);
+      outline:none;transition:all .2s;
+    }
+    .m-fg input:focus, .m-fg select:focus, .m-fg textarea:focus {
+      border-color:var(--teal-light);background:var(--white);
+      box-shadow:0 0 0 3px rgba(18,168,152,.1);
+    }
+    .m-fg textarea { min-height:80px;resize:vertical; }
+    .price-wrap-m { position:relative; }
+    .price-wrap-m .prefix {
+      position:absolute;left:13px;top:50%;transform:translateY(-50%);
+      font-size:14px;color:var(--muted);font-weight:600;pointer-events:none;
+    }
+    .price-wrap-m input { padding-left:26px; }
+ 
+    .modal-footer { display:flex;gap:10px;margin-top:20px; }
+    .m-cancel {
+      flex:1;padding:12px;border-radius:12px;border:1.5px solid var(--border);background:transparent;
+      font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;
+    }
+    .m-cancel:hover { color:var(--text); }
+    .m-save {
+      flex:2;padding:12px;border-radius:12px;border:none;
+      background:linear-gradient(135deg,var(--teal),var(--teal-light));
+      font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;
+      color:var(--white);cursor:pointer;transition:all .2s;
+      box-shadow:0 4px 14px rgba(10,123,110,.22);
+    }
+    .m-save:hover { transform:translateY(-1px);box-shadow:0 7px 20px rgba(10,123,110,.3); }
+ 
+    /* ══ CONFIRM MODAL ══ */
+    .confirm-overlay {
+      position:fixed;inset:0;z-index:300;
+      background:rgba(10,38,48,.5);backdrop-filter:blur(5px);
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;pointer-events:none;transition:opacity .25s;
+    }
+    .confirm-overlay.show { opacity:1;pointer-events:all; }
+    .confirm-box {
+      background:var(--white);border-radius:20px;
+      padding:32px 28px;max-width:360px;width:90%;
+      transform:scale(.9) translateY(16px);transition:all .28s cubic-bezier(.22,.68,0,1.2);
+    }
+    .confirm-overlay.show .confirm-box { transform:scale(1) translateY(0); }
+    .confirm-icon  { font-size:38px;text-align:center;margin-bottom:12px; }
+    .confirm-title { font-family:'Playfair Display',serif;font-size:20px;font-weight:800;text-align:center;margin-bottom:7px; }
+    .confirm-sub   { font-size:13.5px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:24px; }
+    .confirm-btns  { display:flex;gap:10px; }
+    .c-cancel {
+      flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--border);
+      background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+      color:var(--muted);cursor:pointer;transition:all .2s;
+    }
+    .c-confirm {
+      flex:1;padding:12px;border-radius:10px;border:none;background:var(--error);
+      font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;
+      color:var(--white);cursor:pointer;transition:all .2s;
+    }
+    .c-confirm:hover { background:#c93a3a; }
+ 
+    /* ══ TOAST ══ */
+    .toast {
+      position:fixed;bottom:26px;right:26px;z-index:999;
+      padding:12px 20px;border-radius:12px;
+      font-size:13.5px;font-weight:500;color:var(--white);
+      box-shadow:0 8px 28px rgba(0,0,0,.15);
+      transform:translateY(80px);opacity:0;
+      transition:all .33s cubic-bezier(.22,.68,0,1.2);pointer-events:none;
+    }
+    .toast.show { transform:translateY(0);opacity:1; }
+    .toast.success { background:var(--teal); }
+    .toast.error   { background:var(--error); }
+    .toast.warn    { background:var(--warn); }
+ 
+    @media(max-width:700px){
+      main { padding:20px 14px 60px; }
+      .svc-right { flex-wrap:wrap;gap:8px; }
+      .topbar { flex-direction:column;align-items:flex-start; }
+      .topbar-right { align-items:flex-start;width:100%; }
+      .search-wrap input { width:100%; }
+      .nav-item { padding:6px 8px;font-size:10px; }
+    }
+  </style>
+</head>
+<body>
+ 
+<!-- NAV -->
+<nav>
+  <a class="brand" href="#">
+    <div class="brand-logo">🏥</div>
+    <div>
+      <div class="brand-name">MediCare</div>
+      <div class="brand-sub">Healthcare Solutions</div>
+    </div>
+  </a>
+  <div class="nav-links" id="navLinks"></div>
+  <div class="nav-right">
+    <button class="nav-schema-btn" onclick="showToast('Add Schema — coming soon!','warn')">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+      Add Schema
+    </button>
+    <button class="nav-signout" onclick="showToast('Signing out…','success')">Sign Out</button>
+  </div>
+</nav>
+ 
+<main>
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Services</h1>
+      <p>Manage your services – edit, schedule slots or remove</p>
+    </div>
+    <div class="topbar-right">
+      <div class="filter-tabs">
+        <button class="ftab active"  data-f="all"         onclick="setFilter(this,'all')">All</button>
+        <button class="ftab avail"   data-f="available"   onclick="setFilter(this,'available')">Available</button>
+        <button class="ftab unavail" data-f="unavailable" onclick="setFilter(this,'unavailable')">Unavailable</button>
+      </div>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search services…" oninput="renderList()"/>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Results info -->
+  <div class="results-info" id="resultsInfo"></div>
+ 
+  <!-- List -->
+  <div class="services-list" id="servicesList"></div>
+</main>
+ 
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Edit Service</div>
+      <button class="modal-close" onclick="closeEditModal()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="m-fg">
+      <label>Service Name *</label>
+      <input type="text" id="eName" placeholder="e.g. General Consultation"/>
+    </div>
+    <div class="m-fg">
+      <label>Short Description</label>
+      <input type="text" id="eDesc" placeholder="Brief description of the service"/>
+    </div>
+    <div class="m-fg">
+      <label>Price *</label>
+      <div class="price-wrap-m">
+        <span class="prefix">₹</span>
+        <input type="number" id="ePrice" placeholder="499" min="0"/>
+      </div>
+    </div>
+    <div class="m-fg">
+      <label>About</label>
+      <textarea id="eAbout" placeholder="Detailed description…"></textarea>
+    </div>
+    <div class="m-fg">
+      <label>Availability</label>
+      <select id="eAvail">
+        <option value="available">Available</option>
+        <option value="unavailable">Unavailable</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="m-cancel" onclick="closeEditModal()">Cancel</button>
+      <button class="m-save"   onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- Confirm Delete -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title">Remove Service?</div>
+    <div class="confirm-sub" id="confirmSub">This will permanently remove the service.</div>
+    <div class="confirm-btns">
+      <button class="c-cancel"  onclick="closeConfirm()">Cancel</button>
+      <button class="c-confirm" onclick="doDelete()">Yes, Remove</button>
+    </div>
+  </div>
+</div>
+ 
+<div class="toast" id="toast"></div>
+ 
+<script>
+/* ── NAV ── */
+const NAV_DATA = [
+  { l:'Dashboard',            a:false },
+  { l:'Add Doctor',           a:false },
+  { l:'List Doctors',         a:false },
+  { l:'Appointments',         a:false },
+  { l:'Service Dashboard',    a:false },
+  { l:'Add Service',          a:false },
+  { l:'List Services',        a:true  },
+  { l:'Service Appointments', a:false },
+];
+const NAV_ICONS = [
+  `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`,
+  `<svg viewBox="0 0 24 24"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>`,
+  `<svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>`,
+  `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  `<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`,
+  `<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>`,
+  `<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+];
+const navEl = document.getElementById('navLinks');
+NAV_DATA.forEach((item, i) => {
+  const b = document.createElement('button');
+  b.className = 'nav-item' + (item.a ? ' active' : '');
+  b.innerHTML = NAV_ICONS[i] + `<span>${item.l}</span>`;
+  b.onclick = () => { navEl.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); b.classList.add('active'); };
+  navEl.appendChild(b);
+});
+ 
+/* ── DATA ── */
+let services = [
+  {
+    id: 1,
+    name: 'Booking',
+    desc: 'General appointment booking service',
+    about: 'A streamlined booking service for all general medical appointments across departments.',
+    price: 444,
+    avail: 'available',
+    emoji: '📋',
+    image: null,
+    instructions: ['Present valid ID at reception', 'Arrive 10 minutes early', 'Carry previous prescriptions'],
+    slots: ['09 Mar 2026 · 11:00 PM', '15 Mar 2026 · 09:00 AM'],
+  },
+  {
+    id: 2,
+    name: 'Face Care Consultation',
+    desc: 'Dermatology & cosmetic skin consultation',
+    about: 'Expert dermatology consultation covering acne, pigmentation, anti-aging, and cosmetic skin care.',
+    price: 500,
+    avail: 'available',
+    emoji: '🧖',
+    image: null,
+    instructions: ['Come with clean, makeup-free skin', 'List all current skincare products', 'Bring photos of problem areas'],
+    slots: ['20 Mar 2026 · 10:00 AM', '22 Mar 2026 · 03:00 PM', '24 Mar 2026 · 09:00 AM'],
+  },
+  {
+    id: 3,
+    name: 'Cardiology Check-up',
+    desc: 'Heart health assessment & ECG analysis',
+    about: 'Comprehensive cardiac evaluation including ECG, blood pressure monitoring, and lifestyle counselling.',
+    price: 1200,
+    avail: 'available',
+    emoji: '❤️',
+    image: null,
+    instructions: ['Fast for 4 hours before visit', 'Avoid caffeine on the day', 'Bring previous ECG reports if any'],
+    slots: ['26 Mar 2026 · 08:30 AM', '27 Mar 2026 · 11:00 AM'],
+  },
+  {
+    id: 4,
+    name: 'Orthopedic Session',
+    desc: 'Joint, bone & sports injury treatment',
+    about: 'Specialized sessions for joint pain, fractures, sports injuries, and post-surgical rehabilitation.',
+    price: 800,
+    avail: 'unavailable',
+    emoji: '🦴',
+    image: null,
+    instructions: ['Wear loose, comfortable clothing', 'Inform doctor about any implants', 'Bring X-ray reports'],
+    slots: [],
+  },
+  {
+    id: 5,
+    name: 'Dental Care Package',
+    desc: 'Complete dental examination & cleaning',
+    about: 'Comprehensive oral health package including X-ray, scaling, polishing, and cavity check.',
+    price: 400,
+    avail: 'available',
+    emoji: '🦷',
+    image: null,
+    instructions: ['Brush teeth before appointment', 'Avoid eating 2 hours prior', 'List all medications taken'],
+    slots: ['25 Mar 2026 · 10:00 AM', '28 Mar 2026 · 04:00 PM'],
+  },
+  {
+    id: 6,
+    name: 'Child Wellness Check',
+    desc: 'Pediatric health assessment for kids',
+    about: 'Regular wellness checks for children including growth tracking, vaccinations, and developmental assessment.',
+    price: 600,
+    avail: 'unavailable',
+    emoji: '👶',
+    image: null,
+    instructions: ["Bring child's vaccination record", 'Note any recent symptoms', 'Carry health insurance card'],
+    slots: ['29 Mar 2026 · 09:30 AM'],
+  },
+];
+ 
+let activeFilter = 'all';
+let expandedSet  = new Set();
+let editTargetId = null;
+let deleteTargetId = null;
+ 
+/* ── FILTER ── */
+function setFilter(el, val) {
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  activeFilter = val;
+  renderList();
+}
+ 
+/* ── RENDER ── */
+function renderList() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let list = services.filter(s => {
+    const matchF = activeFilter === 'all' || s.avail === activeFilter;
+    const matchQ = !q || s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q);
+    return matchF && matchQ;
+  });
+ 
+  document.getElementById('resultsInfo').innerHTML =
+    `Showing <strong>${list.length}</strong> of <strong>${services.length}</strong> service${services.length !== 1 ? 's' : ''}`;
+ 
+  const container = document.getElementById('servicesList');
+  container.innerHTML = '';
+ 
+  if (!list.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">No services found</div>
+        <div class="empty-sub">Try adjusting your search or filter.</div>
+      </div>`;
+    return;
+  }
+ 
+  list.forEach((s, i) => {
+    const isExpanded = expandedSet.has(s.id);
+    const card = document.createElement('div');
+    card.className = 'svc-card' + (isExpanded ? ' expanded' : '');
+    card.dataset.id = s.id;
+    card.style.animationDelay = `${i * .06}s`;
+ 
+    const badgeCls = s.avail === 'available' ? 'badge-available' : 'badge-unavailable';
+    const badgeTxt = s.avail === 'available' ? '✓ Available' : '✗ Unavailable';
+ 
+    const slotsHTML = s.slots.length
+      ? `<div class="slots-wrap">${s.slots.map(sl => `
+          <div class="slot-pill">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ${sl}
+          </div>`).join('')}</div>`
+      : '<div style="font-size:13px;color:var(--muted);font-style:italic;">No slots scheduled yet.</div>';
+ 
+    const instrHTML = s.instructions.length
+      ? `<ul class="instr-list">${s.instructions.map((t, n) =>
+          `<li><span class="instr-num">${n + 1}</span>${t}</li>`).join('')}</ul>`
+      : '<div style="font-size:13px;color:var(--muted);font-style:italic;">No instructions added.</div>';
+ 
+    card.innerHTML = `
+      <div class="svc-header" onclick="toggleExpand(${s.id})">
+        <div class="svc-thumb">
+          ${s.image ? `<img src="${s.image}" alt="${s.name}"/>` : s.emoji}
+        </div>
+        <div class="svc-info">
+          <div class="svc-name">${s.name}</div>
+          <div class="svc-desc-short">${s.desc}</div>
+          <div class="svc-slot-count">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ${s.slots.length} slot${s.slots.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+        <div class="svc-right">
+          <div class="svc-price">
+            <span class="rupee">₹</span>${s.price.toLocaleString()}
+          </div>
+          <span class="avail-badge ${badgeCls}">${badgeTxt}</span>
+          <button class="expand-btn" onclick="event.stopPropagation();toggleExpand(${s.id})" title="View details">
+            <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+      </div>
+ 
+      <div class="svc-detail" id="detail-${s.id}">
+        <div class="detail-inner">
+          <div class="detail-section">
+            <div class="detail-section-title">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              About
+            </div>
+            <div class="about-text">${s.about || s.desc}</div>
+          </div>
+ 
+          <div class="detail-section">
+            <div class="detail-section-title">
+              <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
+              Instructions
+            </div>
+            ${instrHTML}
+          </div>
+ 
+          <div class="detail-section">
+            <div class="detail-section-title">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Slots
+            </div>
+            ${slotsHTML}
+          </div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-edit"   onclick="openEdit(${s.id})">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit
+          </button>
+          <button class="btn-remove" onclick="openConfirm(${s.id})">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Remove
+          </button>
+        </div>
+      </div>`;
+ 
+    container.appendChild(card);
+  });
+}
+ 
+/* ── EXPAND / COLLAPSE ── */
+function toggleExpand(id) {
+  const card = document.querySelector(`.svc-card[data-id="${id}"]`);
+  if (!card) return;
+  if (expandedSet.has(id)) {
+    expandedSet.delete(id);
+    card.classList.remove('expanded');
+  } else {
+    expandedSet.add(id);
+    card.classList.add('expanded');
+  }
+}
+ 
+/* ── EDIT MODAL ── */
+function openEdit(id) {
+  editTargetId = id;
+  const s = services.find(x => x.id === id);
+  document.getElementById('eName').value  = s.name;
+  document.getElementById('eDesc').value  = s.desc;
+  document.getElementById('ePrice').value = s.price;
+  document.getElementById('eAbout').value = s.about || '';
+  document.getElementById('eAvail').value = s.avail;
+  document.getElementById('editModal').classList.add('show');
+}
+function closeEditModal() {
+  document.getElementById('editModal').classList.remove('show');
+  editTargetId = null;
+}
+function saveEdit() {
+  const name  = document.getElementById('eName').value.trim();
+  const price = +document.getElementById('ePrice').value;
+  if (!name || isNaN(price) || price < 0) {
+    showToast('Please fill name and a valid price.', 'error'); return;
+  }
+  const s = services.find(x => x.id === editTargetId);
+  s.name  = name;
+  s.desc  = document.getElementById('eDesc').value.trim() || s.desc;
+  s.price = price;
+  s.about = document.getElementById('eAbout').value.trim();
+  s.avail = document.getElementById('eAvail').value;
+  closeEditModal();
+  renderList();
+  showToast(`"${s.name}" updated successfully! ✓`, 'success');
+}
+document.getElementById('editModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeEditModal();
+});
+ 
+/* ── DELETE ── */
+function openConfirm(id) {
+  deleteTargetId = id;
+  const s = services.find(x => x.id === id);
+  document.getElementById('confirmSub').textContent = `Remove "${s?.name}"? This action cannot be undone.`;
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('show');
+  deleteTargetId = null;
+}
+function doDelete() {
+  const s = services.find(x => x.id === deleteTargetId);
+  services = services.filter(x => x.id !== deleteTargetId);
+  expandedSet.delete(deleteTargetId);
+  closeConfirm();
+  renderList();
+  showToast(`"${s?.name}" removed.`, 'error');
+}
+document.getElementById('confirmOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeConfirm();
+});
+ 
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+ 
+/* ── INIT ── */
+renderList();
+</script>
+<script>
+  /* ══ UNIFIED NAV ROUTING ══ */
+  (function() {
+    var NAV_ROUTES = [
+      { label: 'Dashboard', file: 'DashBoard.html', active: false },
+    { label: 'Add Doctor', file: 'Add-Doctor.html', active: false },
+    { label: 'List Doctors', file: 'list-Doctors.html', active: false },
+    { label: 'Appointments', file: 'appointments.html', active: false },
+    { label: 'Service Dashboard', file: 'Service-Dashboard.html', active: false },
+    { label: 'Add Service', file: 'Add-Service.html', active: false },
+    { label: 'List Services', file: 'list-Services.html', active: true },
+    { label: 'Service Appointments', file: 'Service-Appointments.html', active: false },
+    { label: 'Add Schema', file: 'Add-Schema.html', active: false }
+    ];
+    var navLinksEl = document.getElementById('navLinks');
+    if (!navLinksEl) return;
+    // Clear existing nav buttons and rebuild with routing
+    navLinksEl.innerHTML = '';
+    var icons = {
+      'Dashboard':            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+      'Add Doctor':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>',
+      'List Doctors':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>',
+      'Appointments':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+      'Service Dashboard':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+      'Add Service':          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>',
+      'List Services':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>',
+      'Service Appointments': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      'Add Schema':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>'
+    };
+    NAV_ROUTES.forEach(function(item) {
+      var btn = document.createElement('button');
+      btn.className = 'nav-item' + (item.active ? ' active' : '');
+      btn.innerHTML = (icons[item.label] || '') + '<span>' + item.label + '</span>';
+      btn.addEventListener('click', function() {
+        window.location.href = item.file;
+      });
+      navLinksEl.appendChild(btn);
+    });
+    // Fix Sign Out button
+    var signOutBtns = document.querySelectorAll('.nav-signout');
+    signOutBtns.forEach(function(b) {
+      b.onclick = function() {
+        if (confirm('Are you sure you want to sign out?')) {
+          window.location.href = 'HomePage.html';
+        }
+      };
+    });
+    // Fix brand logo link
+    var brandLinks = document.querySelectorAll('.brand');
+    brandLinks.forEach(function(b) { b.href = 'DashBoard.html'; });
+  })();
+  /* ══ END UNIFIED NAV ══ */
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('button, a').forEach(function(el) {
+      var txt = el.textContent.trim().toLowerCase();
+      if (txt.indexOf('add service') !== -1 || txt.indexOf('new service') !== -1) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = 'Add-Service.html';
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>
+ 

@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediCare – Add Schema</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    :root {
+      --teal:        #0a7b6e;
+      --teal-light:  #12a898;
+      --teal-pale:   #e6f5f3;
+      --cream:       #f8f6f1;
+      --text:        #1a2630;
+      --muted:       #5e7180;
+      --border:      #cfe4e1;
+      --white:       #ffffff;
+      --error:       #e84b4b;
+      --warn:        #c9973b;
+      --warn-pale:   #fdf3e3;
+      --success:     #2ecc71;
+      --navy:        #1a3a5c;
+      --gold:        #d4af37;
+      --gold-pale:   #fdf8e7;
+      --nav-h:       72px;
+    }
+ 
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: .28;
+      pointer-events: none;
+      z-index: 0;
+    }
+ 
+    /* ══ NAV ══ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(248,246,241,.95);
+      backdrop-filter: blur(14px);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 24px;
+      box-shadow: 0 2px 24px rgba(10,123,110,.07);
+    }
+    .brand { display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0;margin-right:16px; }
+    .brand-logo {
+      width:42px;height:42px;border-radius:50%;
+      background:linear-gradient(135deg,var(--teal),var(--teal-light));
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;box-shadow:0 4px 14px rgba(10,123,110,.3);
+    }
+    .brand-name { font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--teal); }
+    .brand-sub  { font-size:10px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase; }
+    .nav-links  { display:flex;align-items:center;gap:1px;flex:1;overflow-x:auto;scrollbar-width:none; }
+    .nav-links::-webkit-scrollbar { display:none; }
+    .nav-item {
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      padding:7px 10px;border-radius:10px;cursor:pointer;
+      border:none;background:transparent;color:var(--muted);
+      font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;
+      white-space:nowrap;position:relative;transition:all .2s;
+    }
+    .nav-item svg { width:15px;height:15px;stroke-width:1.8;stroke:currentColor;fill:none; }
+    .nav-item:hover { background:var(--teal-pale);color:var(--teal); }
+    .nav-item.active { background:var(--teal-pale);color:var(--teal);font-weight:600; }
+    .nav-item.active::after {
+      content:'';position:absolute;bottom:3px;
+      width:14px;height:2px;border-radius:2px;background:var(--teal);
+    }
+    .nav-right { display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px; }
+    .nav-signout {
+      padding:8px 18px;border-radius:10px;
+      border:1.8px solid var(--teal);background:transparent;color:var(--teal);
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .nav-signout:hover { background:var(--teal);color:var(--white); }
+ 
+    /* ══ MAIN ══ */
+    main { position:relative;z-index:1;padding:32px 36px 80px;max-width:1360px;margin:auto; }
+ 
+    @keyframes fadeUp {
+      from { opacity:0;transform:translateY(14px); }
+      to   { opacity:1;transform:translateY(0); }
+    }
+    @keyframes popIn {
+      from { opacity:0;transform:scale(.7); }
+      to   { opacity:1;transform:scale(1); }
+    }
+    @keyframes countUp {
+      from { opacity:0;transform:translateY(8px); }
+      to   { opacity:1;transform:translateY(0); }
+    }
+ 
+    /* ══ ANALYTICAL DASHBOARD ══ */
+    .analytics-strip {
+      background: linear-gradient(135deg, var(--navy) 0%, #1e4976 50%, #0a3352 100%);
+      border-radius: 20px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      position: relative; overflow: hidden;
+      box-shadow: 0 8px 40px rgba(26,58,92,.3);
+      animation: fadeUp .45s .05s both;
+    }
+    .analytics-strip::before {
+      content:'';position:absolute;top:-60px;right:-60px;
+      width:240px;height:240px;border-radius:50%;
+      background:rgba(212,175,55,.06);
+      pointer-events:none;
+    }
+    .analytics-strip::after {
+      content:'';position:absolute;bottom:-40px;left:30%;
+      width:160px;height:160px;border-radius:50%;
+      background:rgba(18,168,152,.07);
+      pointer-events:none;
+    }
+ 
+    .analytics-head {
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:20px;flex-wrap:wrap;gap:12px;
+    }
+    .analytics-title {
+      font-family:'Playfair Display',serif;
+      font-size:13px;font-weight:700;color:var(--gold);
+      letter-spacing:1.2px;text-transform:uppercase;
+    }
+    .add-schema-nav-btn {
+      display:flex;align-items:center;gap:8px;
+      padding:10px 22px;border-radius:12px;
+      background:var(--gold);border:none;
+      font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;
+      color:var(--navy);cursor:pointer;transition:all .22s;
+      box-shadow:0 4px 16px rgba(212,175,55,.35);letter-spacing:.3px;
+    }
+    .add-schema-nav-btn:hover { background:#e8c53a;transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,175,55,.45); }
+    .add-schema-nav-btn svg { width:15px;height:15px;stroke:var(--navy);fill:none;stroke-width:2.5; }
+ 
+    .analytics-cards {
+      display:grid;
+      grid-template-columns:1fr 1fr 1.2fr 1fr 1.3fr;
+      gap:14px;
+    }
+ 
+    .a-card {
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;padding:16px 18px;
+      backdrop-filter:blur(8px);
+      transition:all .22s;
+    }
+    .a-card:hover {
+      background:rgba(255,255,255,.12);
+      border-color:rgba(212,175,55,.3);
+      transform:translateY(-2px);
+    }
+    .a-card-label {
+      font-size:9.5px;font-weight:700;color:rgba(255,255,255,.5);
+      letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;
+    }
+    .a-card-val {
+      font-family:'Playfair Display',serif;
+      font-size:32px;font-weight:900;color:var(--white);
+      line-height:1;animation: countUp .6s .3s both;
+    }
+    .a-card-sub { font-size:11px;color:rgba(255,255,255,.45);margin-top:6px; }
+    .a-card-sub.positive { color:#6de8a2; }
+ 
+    /* donut */
+    .donut-wrap { display:flex;align-items:center;gap:14px; }
+    .donut { width:64px;height:64px;flex-shrink:0; }
+    .donut-labels { font-size:11.5px;color:rgba(255,255,255,.7);line-height:1.8; }
+    .donut-labels strong { color:var(--white); }
+ 
+    /* bar chart */
+    .mini-bars { display:flex;flex-direction:column;gap:5px; }
+    .mini-bar-row {
+      display:flex;align-items:center;gap:8px;font-size:10.5px;color:rgba(255,255,255,.65);
+    }
+    .mini-bar-row .state { width:22px;font-weight:600;color:rgba(255,255,255,.8); }
+    .mini-bar-track {
+      flex:1;height:7px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden;
+    }
+    .mini-bar-fill { height:100%;border-radius:4px;background:var(--gold);transition:width .8s ease; }
+    .mini-bar-row .val { font-size:9.5px;color:rgba(255,255,255,.5);min-width:28px;text-align:right; }
+ 
+    /* ══ FORM CARD ══ */
+    .form-card {
+      background:var(--white);
+      border:1.5px solid var(--border);
+      border-radius:22px;
+      padding:0;
+      box-shadow:0 8px 48px rgba(10,123,110,.07);
+      overflow:hidden;
+      animation: fadeUp .5s .15s both;
+    }
+ 
+    .form-card-head {
+      background:linear-gradient(135deg,var(--navy) 0%,#1e4976 100%);
+      padding:20px 28px;
+      display:flex;align-items:center;gap:14px;
+    }
+    .form-card-emblem {
+      width:52px;height:52px;border-radius:50%;
+      background:rgba(212,175,55,.15);
+      border:2px solid rgba(212,175,55,.3);
+      display:flex;align-items:center;justify-content:center;
+      font-size:26px;flex-shrink:0;
+    }
+    .form-card-title {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(15px,2vw,20px);font-weight:900;color:var(--white);
+      letter-spacing:.3px;
+    }
+    .form-card-sub { font-size:12px;color:rgba(255,255,255,.5);margin-top:2px; }
+ 
+    .form-body { padding:28px 28px 0; }
+ 
+    /* ══ SECTION ══ */
+    .form-section { margin-bottom:26px; }
+    .section-title {
+      font-size:10px;font-weight:800;color:var(--teal);
+      letter-spacing:1.2px;text-transform:uppercase;
+      display:flex;align-items:center;gap:8px;
+      margin-bottom:14px;padding-bottom:8px;
+      border-bottom:1.5px solid var(--teal-pale);
+    }
+    .section-title svg { width:14px;height:14px;stroke:var(--teal);fill:none;stroke-width:2; }
+ 
+    /* 3-col layout for sections */
+    .sections-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:0 28px;
+    }
+ 
+    /* ── Form groups ── */
+    .fg { display:flex;flex-direction:column;gap:5px;margin-bottom:12px; }
+    .fg label {
+      font-size:10.5px;font-weight:700;color:var(--muted);
+      letter-spacing:.5px;text-transform:uppercase;
+      display:flex;align-items:center;gap:5px;
+    }
+    .fg label svg { width:12px;height:12px;stroke:var(--muted);fill:none;stroke-width:1.8; }
+    .fg input, .fg select, .fg textarea {
+      width:100%;padding:9px 12px;border-radius:9px;
+      border:1.5px solid var(--border);background:var(--cream);
+      font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+      outline:none;transition:all .2s;
+    }
+    .fg input:focus, .fg select:focus, .fg textarea:focus {
+      border-color:var(--teal-light);background:var(--white);
+      box-shadow:0 0 0 3px rgba(18,168,152,.1);
+    }
+    .fg input.err, .fg select.err { border-color:var(--error); }
+    .err-msg { font-size:10.5px;color:var(--error);display:none;margin-top:2px; }
+    .has-err .err-msg { display:block; }
+    .has-err input, .has-err select { border-color:var(--error); }
+    .fg textarea { min-height:100px;resize:vertical; }
+    .char-hint { font-size:10.5px;color:var(--muted);text-align:right; }
+    .char-hint strong { color:var(--teal); }
+ 
+    .fg-row { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+ 
+    /* schema image upload */
+    .schema-img-upload {
+      display:flex;align-items:center;gap:12px;margin-bottom:12px;
+    }
+    .schema-img-box {
+      width:72px;height:72px;border-radius:12px;
+      border:2px dashed var(--border);background:var(--teal-pale);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;overflow:hidden;transition:all .2s;flex-shrink:0;
+    }
+    .schema-img-box:hover { border-color:var(--teal-light); }
+    .schema-img-box img { width:100%;height:100%;object-fit:cover;border-radius:10px; }
+    .schema-img-box .img-placeholder { font-size:26px;opacity:.5; }
+    .upload-img-btn {
+      padding:7px 16px;border-radius:8px;
+      border:1.5px solid var(--teal);color:var(--teal);background:transparent;
+      font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+      cursor:pointer;transition:all .2s;
+    }
+    .upload-img-btn:hover { background:var(--teal);color:var(--white); }
+    #schemaImgInput { display:none; }
+ 
+    /* tags input */
+    .tags-input-wrap {
+      min-height:42px;padding:6px 10px;
+      border-radius:9px;border:1.5px solid var(--border);
+      background:var(--cream);display:flex;flex-wrap:wrap;
+      gap:6px;align-items:center;cursor:text;transition:all .2s;
+    }
+    .tags-input-wrap:focus-within {
+      border-color:var(--teal-light);background:var(--white);
+      box-shadow:0 0 0 3px rgba(18,168,152,.1);
+    }
+    .tag-chip {
+      display:inline-flex;align-items:center;gap:5px;
+      padding:3px 10px;border-radius:20px;
+      background:var(--teal);color:var(--white);
+      font-size:11.5px;font-weight:600;
+      animation: popIn .2s cubic-bezier(.22,.68,0,1.3) both;
+    }
+    .tag-remove {
+      background:none;border:none;cursor:pointer;
+      color:rgba(255,255,255,.7);font-size:13px;line-height:1;
+      padding:0;transition:color .15s;
+    }
+    .tag-remove:hover { color:var(--white); }
+    .tags-input {
+      border:none;background:transparent;outline:none;
+      font-family:'DM Sans',sans-serif;font-size:12.5px;color:var(--text);
+      min-width:80px;flex:1;padding:2px 0;
+    }
+ 
+    /* documentation tags */
+    .doc-tags-area {
+      min-height:54px;padding:8px 10px;
+      border-radius:9px;border:1.5px solid var(--border);
+      background:var(--cream);display:flex;flex-wrap:wrap;
+      gap:6px;align-items:flex-start;cursor:text;transition:all .2s;
+    }
+    .doc-tags-area:focus-within {
+      border-color:var(--teal-light);background:var(--white);
+      box-shadow:0 0 0 3px rgba(18,168,152,.1);
+    }
+    .doc-chip {
+      display:inline-flex;align-items:center;gap:5px;
+      padding:4px 11px;border-radius:20px;
+      background:var(--teal-pale);border:1px solid var(--border);
+      color:var(--teal);font-size:11.5px;font-weight:600;
+      animation: popIn .2s cubic-bezier(.22,.68,0,1.3) both;
+    }
+    .doc-chip-remove {
+      background:none;border:none;cursor:pointer;
+      color:var(--muted);font-size:13px;line-height:1;padding:0;transition:color .15s;
+    }
+    .doc-chip-remove:hover { color:var(--error); }
+ 
+    /* agencies section */
+    .agencies-list { display:flex;flex-direction:column;gap:8px;margin-bottom:10px; }
+    .agency-row {
+      display:grid;grid-template-columns:1fr 1fr auto;
+      gap:8px;align-items:center;
+      padding:10px 12px;border-radius:10px;
+      background:var(--cream);border:1.5px solid var(--border);
+      animation: fadeUp .3s both;
+    }
+    .agency-row .ag-col { display:flex;flex-direction:column;gap:4px; }
+    .agency-row .ag-label { font-size:9.5px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase; }
+    .agency-row .ag-val { font-size:12.5px;color:var(--text);font-weight:500; }
+    .agency-del {
+      width:30px;height:30px;border-radius:50%;
+      border:1.5px solid var(--border);background:transparent;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;color:var(--muted);transition:all .2s;
+    }
+    .agency-del:hover { border-color:var(--error);color:var(--error); }
+    .agency-del svg { width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5; }
+ 
+    .agency-form-grid {
+      display:grid;grid-template-columns:1fr 1fr;gap:8px;
+      padding:12px;border-radius:10px;
+      background:var(--gold-pale);border:1.5px solid rgba(212,175,55,.25);
+      margin-bottom:8px;
+    }
+    .ag-input {
+      padding:9px 12px;border-radius:8px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:12.5px;color:var(--text);
+      outline:none;transition:all .2s;
+    }
+    .ag-input:focus { border-color:var(--teal-light); }
+    .add-agency-btn {
+      grid-column:1/-1;padding:9px;border-radius:9px;
+      background:var(--navy);color:var(--white);border:none;
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:700;
+      cursor:pointer;transition:all .2s;
+      display:flex;align-items:center;justify-content:center;gap:6px;
+    }
+    .add-agency-btn:hover { background:var(--teal); }
+    .add-agency-btn svg { width:14px;height:14px;stroke:white;fill:none;stroke-width:2.5; }
+ 
+    /* ══ FORM FOOTER ══ */
+    .form-footer {
+      padding:20px 28px 24px;
+      display:flex;align-items:center;justify-content:flex-end;
+      gap:12px;
+      border-top:1.5px solid var(--border);
+      background:var(--cream);
+    }
+    .btn-reset-server {
+      padding:12px 28px;border-radius:30px;
+      border:1.8px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;
+      color:var(--muted);cursor:pointer;transition:all .22s;
+    }
+    .btn-reset-server:hover { border-color:var(--warn);color:var(--warn); }
+    .btn-add-schema {
+      display:flex;align-items:center;gap:9px;
+      padding:12px 32px;border-radius:30px;
+      background:linear-gradient(135deg,var(--navy) 0%,#1e4976 100%);
+      color:var(--white);border:none;
+      font-family:'Playfair Display',serif;font-size:15px;font-weight:800;
+      cursor:pointer;transition:all .25s;letter-spacing:.3px;
+      box-shadow:0 6px 24px rgba(26,58,92,.3);
+    }
+    .btn-add-schema:hover { transform:translateY(-2px);box-shadow:0 10px 30px rgba(26,58,92,.4); }
+    .btn-add-schema svg { width:16px;height:16px;stroke:var(--gold);fill:none;stroke-width:2.5; }
+    .btn-add-schema.loading { opacity:.7;pointer-events:none; }
+ 
+    /* ══ SCHEMAS TABLE ══ */
+    .schemas-section {
+      margin-top:36px;
+      animation: fadeUp .5s .3s both;
+    }
+    .schemas-head {
+      display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;
+    }
+    .schemas-title {
+      font-family:'Playfair Display',serif;font-size:22px;font-weight:800;color:var(--text);
+    }
+    .schemas-count {
+      padding:4px 14px;border-radius:20px;
+      background:var(--gold-pale);border:1px solid rgba(212,175,55,.3);
+      font-size:12px;color:var(--warn);font-weight:700;
+    }
+    .schemas-table-wrap {
+      background:var(--white);border:1.5px solid var(--border);
+      border-radius:18px;overflow:hidden;
+      box-shadow:0 4px 24px rgba(10,123,110,.05);
+    }
+    table { width:100%;border-collapse:collapse; }
+    thead tr { background:linear-gradient(135deg,var(--navy),#1e4976);  }
+    thead th {
+      padding:12px 16px;text-align:left;
+      font-size:10px;font-weight:700;color:rgba(255,255,255,.7);
+      letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;
+    }
+    tbody tr { border-bottom:1px solid var(--border);transition:background .15s; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:var(--cream); }
+    tbody td { padding:13px 16px;font-size:13px;color:var(--text);vertical-align:middle; }
+    .schema-name-cell { display:flex;align-items:center;gap:10px; }
+    .schema-emoji { width:34px;height:34px;border-radius:8px;background:var(--teal-pale);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0; }
+    .s-name { font-weight:700;color:var(--text); }
+    .s-id   { font-size:11px;color:var(--muted); }
+    .prog-badge {
+      padding:3px 10px;border-radius:20px;
+      background:var(--teal-pale);font-size:11px;color:var(--teal);font-weight:600;
+    }
+    .coverage-val { font-family:'Playfair Display',serif;font-size:14px;font-weight:800;color:var(--teal); }
+    .table-del {
+      padding:5px 12px;border-radius:8px;border:1.5px solid var(--error);
+      color:var(--error);background:transparent;font-family:'DM Sans',sans-serif;
+      font-size:11.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .table-del:hover { background:var(--error);color:var(--white); }
+    .empty-row td { text-align:center;padding:50px;color:var(--muted);font-size:14px; }
+ 
+    /* ══ TOAST ══ */
+    .toast {
+      position:fixed;bottom:26px;right:26px;z-index:999;
+      padding:12px 22px;border-radius:12px;
+      font-size:13.5px;font-weight:500;color:var(--white);
+      box-shadow:0 8px 28px rgba(0,0,0,.15);
+      transform:translateY(80px);opacity:0;
+      transition:all .33s cubic-bezier(.22,.68,0,1.2);pointer-events:none;
+    }
+    .toast.show { transform:translateY(0);opacity:1; }
+    .toast.success { background:var(--teal); }
+    .toast.error   { background:var(--error); }
+    .toast.warn    { background:var(--warn); }
+ 
+    @media(max-width:1100px){
+      .analytics-cards { grid-template-columns:1fr 1fr 1fr; }
+      .sections-grid   { grid-template-columns:1fr 1fr; }
+    }
+    @media(max-width:760px){
+      main { padding:20px 14px 60px; }
+      .analytics-cards { grid-template-columns:1fr 1fr; }
+      .sections-grid   { grid-template-columns:1fr; }
+      .form-body       { padding:20px 16px 0; }
+      .form-footer     { padding:16px; }
+      .nav-item { padding:5px 7px;font-size:9.5px; }
+    }
+  </style>
+</head>
+<body>
+ 
+<!-- ══ NAV ══ -->
+<nav>
+  <a class="brand" href="#">
+    <div class="brand-logo">🏥</div>
+    <div>
+      <div class="brand-name">MediCare</div>
+      <div class="brand-sub">Healthcare Solutions</div>
+    </div>
+  </a>
+  <div class="nav-links" id="navLinks"></div>
+  <div class="nav-right">
+    <button class="nav-signout" onclick="showToast('Signing out…','success')">Sign Out</button>
+  </div>
+</nav>
+ 
+<main>
+ 
+  <!-- ══ ANALYTICAL DASHBOARD ══ -->
+  <div class="analytics-strip">
+    <div class="analytics-head">
+      <div class="analytics-title">📊 Analytical Dashboard — Government Schemas</div>
+      <button class="add-schema-nav-btn" onclick="document.getElementById('schemaForm').scrollIntoView({behavior:'smooth'})">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Schema
+      </button>
+    </div>
+ 
+    <div class="analytics-cards">
+      <!-- Active Programs -->
+      <div class="a-card">
+        <div class="a-card-label">Active Govt. Health Programs</div>
+        <div class="a-card-val" id="statPrograms">12</div>
+        <div class="a-card-sub positive">+3 this month</div>
+      </div>
+ 
+      <!-- Beneficiaries -->
+      <div class="a-card">
+        <div class="a-card-label">Beneficiaries Enrolled</div>
+        <div class="a-card-val" id="statBenef">1.2 Cr</div>
+        <div class="a-card-sub">growth rate chart</div>
+      </div>
+ 
+      <!-- Fund Utilization Donut -->
+      <div class="a-card">
+        <div class="a-card-label">Fund Utilization Status</div>
+        <div class="donut-wrap">
+          <svg class="donut" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="4"/>
+            <circle cx="18" cy="18" r="14" fill="none" stroke="#d4af37" stroke-width="4"
+              stroke-dasharray="57 43" stroke-dashoffset="25" stroke-linecap="round"
+              style="transition:stroke-dasharray 1.2s ease;"/>
+            <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="4"
+              stroke-dasharray="38 62" stroke-dashoffset="-32" stroke-linecap="round"/>
+          </svg>
+          <div class="donut-labels">
+            <div><strong>65%</strong> Utilized</div>
+            <div><strong>35%</strong> Remaining</div>
+            <div style="margin-top:4px;color:rgba(255,255,255,.4)">of INR 2000 Cr</div>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- Claims Approval -->
+      <div class="a-card">
+        <div class="a-card-label">Claims Approval Rate</div>
+        <div class="a-card-val" style="font-size:36px;">94.2%</div>
+        <div class="a-card-sub positive">↑ 2.1% from last quarter</div>
+      </div>
+ 
+      <!-- Top State Enrollments -->
+      <div class="a-card">
+        <div class="a-card-label">Top State Enrollments</div>
+        <div class="mini-bars" id="stateBars"></div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- ══ FORM CARD ══ -->
+  <div class="form-card" id="schemaForm">
+    <div class="form-card-head">
+      <div class="form-card-emblem">🏛️</div>
+      <div>
+        <div class="form-card-title">Add New Government Health Schema</div>
+        <div class="form-card-sub">Fill all sections to register a new national / state health programme</div>
+      </div>
+    </div>
+ 
+    <div class="form-body">
+      <div class="sections-grid">
+ 
+        <!-- ── SECTION 1: PROGRAM INFO ── -->
+        <div class="form-section">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Section 1: Program Information
+          </div>
+ 
+          <!-- Schema image + name -->
+          <div class="schema-img-upload">
+            <div class="schema-img-box" id="schemaImgBox" onclick="document.getElementById('schemaImgInput').click()">
+              <div class="img-placeholder" id="sImgPlaceholder">🏛️</div>
+              <img id="sImgPreview" src="" alt="" style="display:none;"/>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Schema Logo / Emblem</div>
+              <button class="upload-img-btn" onclick="document.getElementById('schemaImgInput').click()">Upload Image</button>
+              <input type="file" id="schemaImgInput" accept="image/*" onchange="handleSchemaImg(event)"/>
+            </div>
+          </div>
+ 
+          <div class="fg" id="fg-sname">
+            <label>
+              <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Schema Name *
+            </label>
+            <input type="text" id="sName" placeholder="Ayushman Bharat, Prime Minister's Health Card…"/>
+            <span class="err-msg">Schema name is required.</span>
+          </div>
+ 
+          <div class="fg" id="fg-gbody">
+            <label>
+              <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              Government Body *
+            </label>
+            <select id="sGovBody">
+              <option value="">Government Body</option>
+              <option>Ministry of Health & Family Welfare</option>
+              <option>National Health Authority</option>
+              <option>State Health Agency</option>
+              <option>ESIC</option>
+              <option>CGHS</option>
+              <option>Other</option>
+            </select>
+            <span class="err-msg">Select a government body.</span>
+          </div>
+ 
+          <div class="fg-row">
+            <div class="fg" id="fg-ptype">
+              <label>
+                <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Program Type
+              </label>
+              <select id="sPtype">
+                <option>National, State-level</option>
+                <option>National Only</option>
+                <option>State Only</option>
+                <option>District-level</option>
+                <option>Central Sector</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+                Schema ID
+              </label>
+              <input type="text" id="sId" placeholder="e.g. AB-PMJAY-2024"/>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- ── SECTION 2: ELIGIBILITY ── -->
+        <div class="form-section">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Section 2: Eligibility &amp; Criteria
+          </div>
+ 
+          <div class="fg-row">
+            <div class="fg">
+              <label>
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Age Range
+              </label>
+              <select id="sAgeRange">
+                <option>0-65</option>
+                <option>0-18</option>
+                <option>18-60</option>
+                <option>18-65</option>
+                <option>60+</option>
+                <option>All ages</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Income Bracket
+              </label>
+              <input type="text" id="sIncome" placeholder="e.g. below INR 5,00,000 p.a."/>
+            </div>
+          </div>
+ 
+          <div class="fg-row">
+            <div class="fg">
+              <label>
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+                Family Size Limit
+              </label>
+              <select id="sFamilySize">
+                <option value="">Input</option>
+                <option>No limit</option>
+                <option>Up to 5 members</option>
+                <option>Up to 7 members</option>
+                <option>Up to 10 members</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                Disability
+              </label>
+              <select id="sDisability">
+                <option value="">Input</option>
+                <option>Not applicable</option>
+                <option>Physical disability</option>
+                <option>Visual impairment</option>
+                <option>Any disability</option>
+              </select>
+            </div>
+          </div>
+ 
+          <div class="fg-row">
+            <div class="fg">
+              <label>
+                <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                Disability Check
+              </label>
+              <select id="sDisabilityCheck">
+                <option value="">Input</option>
+                <option>Required</option>
+                <option>Not required</option>
+                <option>Self-declaration</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>
+                <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                BPL Card
+              </label>
+              <select id="sBPL">
+                <option value="">Input</option>
+                <option>Mandatory</option>
+                <option>Optional</option>
+                <option>Not required</option>
+              </select>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- ── SECTION 3: BENEFIT DETAILS ── -->
+        <div class="form-section">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            Section 3: Benefit Details
+          </div>
+ 
+          <div class="fg" id="fg-coverage">
+            <label>
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              Annual Coverage Amount *
+            </label>
+            <input type="text" id="sCoverage" placeholder="e.g. INR 10,00,000"/>
+            <span class="err-msg">Coverage amount is required.</span>
+          </div>
+ 
+          <div class="fg">
+            <label>
+              <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M21 12c.552 0 1-.448 1-1V7a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v4c0 .552.448 1 1 1"/><path d="M3 12v5a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-5"/></svg>
+              Covered Treatments (Tags)
+            </label>
+            <div class="tags-input-wrap" id="treatTagsWrap" onclick="document.getElementById('treatTagInput').focus()">
+              <!-- tags injected here -->
+              <input type="text" id="treatTagInput" class="tags-input" placeholder="Type & press Enter…"
+                onkeydown="handleTagInput(event,'treat')"/>
+            </div>
+          </div>
+ 
+          <div class="fg-row">
+            <div class="fg">
+              <label>
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Benefit Type
+              </label>
+              <select id="sBenefitType">
+                <option>Specialist Consultations covered?</option>
+                <option>Hospitalization</option>
+                <option>Diagnostics</option>
+                <option>Medicines</option>
+                <option>Maternity</option>
+                <option>Emergency</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>
+                <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Cashless Facility
+              </label>
+              <select id="sCashless">
+                <option value="no">No</option>
+                <option value="yes">Yes — Full</option>
+                <option value="partial">Yes — Partial</option>
+              </select>
+            </div>
+          </div>
+        </div>
+ 
+        <!-- ── SECTION 4: DOCUMENTATION ── -->
+        <div class="form-section">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Section 4: Documentation
+          </div>
+          <div class="fg">
+            <label>Required Documents (Tags)</label>
+            <div class="doc-tags-area" id="docTagsArea" onclick="document.getElementById('docTagInput').focus()">
+              <input type="text" id="docTagInput" class="tags-input" placeholder="Type doc name & press Enter…"
+                onkeydown="handleTagInput(event,'doc')"/>
+            </div>
+            <div style="font-size:10.5px;color:var(--muted);margin-top:5px;">e.g. Aadhar, BPL card, Income certificate, Medical records</div>
+          </div>
+        </div>
+ 
+        <!-- ── SECTION 5: AGENCY ── -->
+        <div class="form-section">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            Section 5: Implementation Agency
+          </div>
+          <div class="agencies-list" id="agenciesList"></div>
+          <div class="agency-form-grid">
+            <input type="text" id="agName"  class="ag-input" placeholder="Agency Name"/>
+            <input type="text" id="agContact" class="ag-input" placeholder="Contact Person"/>
+            <input type="email" id="agEmail" class="ag-input" placeholder="Email"/>
+            <input type="tel"  id="agPhone" class="ag-input" placeholder="Contact Phone"/>
+            <button class="add-agency-btn" onclick="addAgency()">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Agency
+            </button>
+          </div>
+        </div>
+ 
+        <!-- ── SECTION 6: DESCRIPTION ── -->
+        <div class="form-section">
+          <div class="section-title">
+            <svg viewBox="0 0 24 24"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+            Section 6: Description of Schema Goals
+          </div>
+          <div class="fg" id="fg-desc">
+            <label>
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/></svg>
+              Schema Goals Description * <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;">(500 chars max)</span>
+            </label>
+            <textarea id="sDesc" maxlength="500"
+              placeholder="Detailed description of the schema's goals, objectives, and targeted impact…"
+              oninput="updateDescCount()"></textarea>
+            <div class="char-hint"><strong id="descCount">0</strong> / 500</div>
+            <span class="err-msg">Description is required.</span>
+          </div>
+        </div>
+ 
+      </div><!-- /sections-grid -->
+    </div><!-- /form-body -->
+ 
+    <div class="form-footer">
+      <button class="btn-reset-server" onclick="resetForm()">Reset to Server</button>
+      <button class="btn-add-schema" id="addSchemaBtn" onclick="submitSchema()">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span id="addSchemaBtnText">⊕ ADD SCHEMAS</span>
+      </button>
+    </div>
+  </div>
+ 
+  <!-- ══ SCHEMAS TABLE ══ -->
+  <div class="schemas-section">
+    <div class="schemas-head">
+      <div class="schemas-title">Registered Schemas</div>
+      <div class="schemas-count" id="schemaCount">0 schemas</div>
+    </div>
+    <div class="schemas-table-wrap">
+      <table id="schemasTable">
+        <thead>
+          <tr>
+            <th>Schema</th>
+            <th>Gov. Body</th>
+            <th>Type</th>
+            <th>Coverage</th>
+            <th>Age Range</th>
+            <th>Cashless</th>
+            <th>Agencies</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="schemasBody"></tbody>
+      </table>
+    </div>
+  </div>
+ 
+</main>
+ 
+<div class="toast" id="toast"></div>
+ 
+<script>
+/* ── NAV ── */
+const NAV_DATA = [
+  { l:'Dashboard',            a:false },
+  { l:'Add Doctor',           a:false },
+  { l:'List Doctors',         a:false },
+  { l:'Appointments',         a:false },
+  { l:'Service Dashboard',    a:false },
+  { l:'Add Schemas',          a:true  },
+  { l:'List Services',        a:false },
+  { l:'Service Appointments', a:false },
+];
+const NAV_ICONS = [
+  `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`,
+  `<svg viewBox="0 0 24 24"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>`,
+  `<svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>`,
+  `<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  `<svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>`,
+  `<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>`,
+  `<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+];
+const navEl = document.getElementById('navLinks');
+NAV_DATA.forEach((item, i) => {
+  const b = document.createElement('button');
+  b.className = 'nav-item' + (item.a ? ' active' : '');
+  b.innerHTML = NAV_ICONS[i] + `<span>${item.l}</span>`;
+  b.onclick = () => { navEl.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); b.classList.add('active'); };
+  navEl.appendChild(b);
+});
+ 
+/* ── STATE BARS ── */
+const stateData = [
+  { state:'UP', val:87, pct:87 },
+  { state:'MH', val:72, pct:72 },
+  { state:'WB', val:58, pct:58 },
+  { state:'BI', val:51, pct:51 },
+  { state:'TN', val:44, pct:44 },
+];
+const barsEl = document.getElementById('stateBars');
+stateData.forEach(s => {
+  barsEl.innerHTML += `
+    <div class="mini-bar-row">
+      <span class="state">${s.state}</span>
+      <div class="mini-bar-track"><div class="mini-bar-fill" style="width:0%" data-w="${s.pct}%"></div></div>
+      <span class="val">${s.val}L</span>
+    </div>`;
+});
+setTimeout(() => {
+  document.querySelectorAll('.mini-bar-fill').forEach(el => {
+    el.style.width = el.dataset.w;
+  });
+}, 400);
+ 
+/* ── SCHEMA IMAGE ── */
+let schemaImgSrc = null;
+function handleSchemaImg(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    schemaImgSrc = ev.target.result;
+    document.getElementById('sImgPlaceholder').style.display = 'none';
+    const img = document.getElementById('sImgPreview');
+    img.src = schemaImgSrc; img.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+ 
+/* ── TAGS (treatments + docs) ── */
+const treatTags = ['cancer', 'cardiac', 'kidney', 'generic medicines'];
+const docTags   = ['Aadhar', 'BPL card', 'Income certificate', 'Medical records'];
+ 
+function renderTreatTags() {
+  const wrap = document.getElementById('treatTagsWrap');
+  wrap.querySelectorAll('.tag-chip').forEach(t => t.remove());
+  treatTags.forEach((tag, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.innerHTML = `${tag}<button class="tag-remove" onclick="removeTreatTag(${i})">×</button>`;
+    wrap.insertBefore(chip, document.getElementById('treatTagInput'));
+  });
+}
+function removeTreatTag(i) { treatTags.splice(i,1); renderTreatTags(); }
+ 
+function renderDocTags() {
+  const area = document.getElementById('docTagsArea');
+  area.querySelectorAll('.doc-chip').forEach(t => t.remove());
+  docTags.forEach((tag, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'doc-chip';
+    chip.innerHTML = `${tag}<button class="doc-chip-remove" onclick="removeDocTag(${i})">×</button>`;
+    area.insertBefore(chip, document.getElementById('docTagInput'));
+  });
+}
+function removeDocTag(i) { docTags.splice(i,1); renderDocTags(); }
+ 
+function handleTagInput(e, type) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,$/, '');
+    if (!val) return;
+    if (type === 'treat') { treatTags.push(val); renderTreatTags(); }
+    else                  { docTags.push(val);   renderDocTags();   }
+    e.target.value = '';
+  }
+  if (e.key === 'Backspace' && !e.target.value) {
+    if (type === 'treat' && treatTags.length) { treatTags.pop(); renderTreatTags(); }
+    if (type === 'doc'   && docTags.length)   { docTags.pop();   renderDocTags();   }
+  }
+}
+ 
+/* ── AGENCIES ── */
+let agencies = [];
+function addAgency() {
+  const name    = document.getElementById('agName').value.trim();
+  const contact = document.getElementById('agContact').value.trim();
+  const email   = document.getElementById('agEmail').value.trim();
+  const phone   = document.getElementById('agPhone').value.trim();
+  if (!name) { showToast('Agency name is required.', 'error'); return; }
+  agencies.push({ name, contact, email, phone });
+  renderAgencies();
+  ['agName','agContact','agEmail','agPhone'].forEach(id => document.getElementById(id).value = '');
+  showToast(`Agency "${name}" added.`, 'success');
+}
+function removeAgency(i) { agencies.splice(i,1); renderAgencies(); }
+function renderAgencies() {
+  const el = document.getElementById('agenciesList');
+  el.innerHTML = '';
+  agencies.forEach((a, i) => {
+    el.innerHTML += `
+      <div class="agency-row">
+        <div class="ag-col">
+          <span class="ag-label">Name</span>
+          <span class="ag-val">${a.name}</span>
+        </div>
+        <div class="ag-col">
+          <span class="ag-label">${a.contact || '–'} · ${a.phone || '–'}</span>
+          <span class="ag-val" style="font-size:11.5px;color:var(--muted)">${a.email || '–'}</span>
+        </div>
+        <button class="agency-del" onclick="removeAgency(${i})">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+  });
+}
+ 
+/* ── CHAR COUNT ── */
+function updateDescCount() {
+  document.getElementById('descCount').textContent = document.getElementById('sDesc').value.length;
+}
+ 
+/* ── VALIDATION ── */
+function validate() {
+  let ok = true;
+  const rules = [
+    { id:'sName',     fgId:'fg-sname',    test:v=>v.trim().length>=2 },
+    { id:'sGovBody',  fgId:'fg-gbody',    test:v=>v!=='' },
+    { id:'sCoverage', fgId:'fg-coverage', test:v=>v.trim().length>=2 },
+    { id:'sDesc',     fgId:'fg-desc',     test:v=>v.trim().length>=10 },
+  ];
+  rules.forEach(r => {
+    const inp = document.getElementById(r.id);
+    const fg  = document.getElementById(r.fgId);
+    if (!r.test(inp.value)) { fg.classList.add('has-err'); ok=false; }
+    else fg.classList.remove('has-err');
+  });
+  return ok;
+}
+['sName','sGovBody','sCoverage','sDesc'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => {
+    const fgMap = {sName:'fg-sname',sGovBody:'fg-gbody',sCoverage:'fg-coverage',sDesc:'fg-desc'};
+    document.getElementById(fgMap[id])?.classList.remove('has-err');
+  });
+});
+ 
+/* ── SUBMIT ── */
+let schemas = [];
+function submitSchema() {
+  if (!validate()) { showToast('Please complete all required fields.', 'error'); return; }
+  const btn = document.getElementById('addSchemaBtn');
+  btn.classList.add('loading');
+  document.getElementById('addSchemaBtnText').textContent = 'Saving…';
+  setTimeout(() => {
+    const schema = {
+      id:       Date.now(),
+      name:     document.getElementById('sName').value.trim(),
+      govBody:  document.getElementById('sGovBody').value,
+      ptype:    document.getElementById('sPtype').value,
+      schemaId: document.getElementById('sId').value.trim() || '—',
+      coverage: document.getElementById('sCoverage').value.trim(),
+      ageRange: document.getElementById('sAgeRange').value,
+      cashless: document.getElementById('sCashless').options[document.getElementById('sCashless').selectedIndex].text,
+      agencies: agencies.length,
+      treatments: [...treatTags],
+      docs:     [...docTags],
+      desc:     document.getElementById('sDesc').value.trim(),
+      image:    schemaImgSrc,
+    };
+    schemas.unshift(schema);
+    renderSchemasTable();
+    updateAnalytics();
+    resetForm();
+    btn.classList.remove('loading');
+    document.getElementById('addSchemaBtnText').textContent = '⊕ ADD SCHEMAS';
+    showToast(`Schema "${schema.name}" registered successfully! 🏛️`, 'success');
+  }, 900);
+}
+ 
+/* ── RESET ── */
+function resetForm() {
+  ['sName','sId','sIncome','sCoverage','sDesc'].forEach(id => document.getElementById(id).value = '');
+  ['sGovBody','sPtype','sAgeRange','sFamilySize','sDisability','sDisabilityCheck','sBPL','sBenefitType','sCashless']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.selectedIndex=0; });
+  schemaImgSrc = null;
+  document.getElementById('sImgPlaceholder').style.display = '';
+  const img = document.getElementById('sImgPreview');
+  img.src=''; img.style.display='none';
+  document.getElementById('schemaImgInput').value='';
+  treatTags.length=0; treatTags.push('cancer','cardiac','kidney','generic medicines'); renderTreatTags();
+  docTags.length=0; docTags.push('Aadhar','BPL card','Income certificate','Medical records'); renderDocTags();
+  agencies=[]; renderAgencies();
+  document.getElementById('descCount').textContent='0';
+  ['fg-sname','fg-gbody','fg-coverage','fg-desc'].forEach(id=>document.getElementById(id)?.classList.remove('has-err'));
+  ['agName','agContact','agEmail','agPhone'].forEach(id=>document.getElementById(id).value='');
+}
+ 
+/* ── TABLE ── */
+function renderSchemasTable() {
+  const tbody = document.getElementById('schemasBody');
+  tbody.innerHTML = '';
+  document.getElementById('schemaCount').textContent = `${schemas.length} schema${schemas.length!==1?'s':''}`;
+  if (!schemas.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">
+      <div style="font-size:36px;opacity:.3;margin-bottom:8px;">🏛️</div>
+      No schemas registered yet.
+    </td></tr>`;
+    return;
+  }
+  schemas.forEach((s,i) => {
+    const tr = document.createElement('tr');
+    tr.style.animationDelay=`${i*.05}s`;
+    tr.innerHTML = `
+      <td>
+        <div class="schema-name-cell">
+          <div class="schema-emoji">${s.image ? `<img src="${s.image}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;"/>` : '🏛️'}</div>
+          <div>
+            <div class="s-name">${s.name}</div>
+            <div class="s-id">${s.schemaId}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:12px;max-width:160px;">${s.govBody}</td>
+      <td><span class="prog-badge">${s.ptype}</span></td>
+      <td><span class="coverage-val">${s.coverage}</span></td>
+      <td>${s.ageRange}</td>
+      <td>${s.cashless}</td>
+      <td>${s.agencies} agenc${s.agencies!==1?'ies':'y'}</td>
+      <td><button class="table-del" onclick="deleteSchema(${s.id})">Delete</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function deleteSchema(id) {
+  const s = schemas.find(x=>x.id===id);
+  schemas=schemas.filter(x=>x.id!==id);
+  renderSchemasTable();
+  updateAnalytics();
+  showToast(`"${s?.name}" deleted.`, 'error');
+}
+ 
+/* ── UPDATE ANALYTICS COUNTERS ── */
+function updateAnalytics() {
+  const base = 12;
+  document.getElementById('statPrograms').textContent = base + schemas.length;
+}
+ 
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3200);
+}
+ 
+/* ── INIT ── */
+renderTreatTags();
+renderDocTags();
+renderAgencies();
+renderSchemasTable();
+</script>
+</body>
+</html>

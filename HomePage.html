@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediCare – Healthcare Solutions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    :root {
+      --teal:       #0a7b6e;
+      --teal-light: #12a898;
+      --teal-pale:  #e6f5f3;
+      --cream:      #f8f6f1;
+      --text:       #1a2630;
+      --muted:      #5e7180;
+      --border:     #cfe4e1;
+      --white:      #ffffff;
+      --accent:     #e84b4b;
+      --gold:       #c9973b;
+      --nav-h:      72px;
+    }
+ 
+    html { scroll-behavior: smooth; }
+ 
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+ 
+    /* ── subtle grid background ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: .35;
+      pointer-events: none;
+      z-index: 0;
+    }
+ 
+    /* ════════════════ NAV ════════════════ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(248,246,241,.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 28px;
+      gap: 0;
+      box-shadow: 0 2px 24px rgba(10,123,110,.07);
+    }
+ 
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none; flex-shrink: 0;
+      margin-right: 24px;
+    }
+    .brand-logo {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal), var(--teal-light));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; box-shadow: 0 4px 14px rgba(10,123,110,.3);
+      flex-shrink: 0;
+    }
+    .brand-text { line-height: 1.15; }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px; font-weight: 700;
+      color: var(--teal); letter-spacing: -.3px;
+    }
+    .brand-sub { font-size: 10px; color: var(--muted); letter-spacing: .6px; text-transform: uppercase; }
+ 
+    .nav-links {
+      display: flex; align-items: center; gap: 2px;
+      flex: 1; overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-links::-webkit-scrollbar { display: none; }
+ 
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 8px 14px; border-radius: 10px; cursor: pointer;
+      border: none; background: transparent; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 11.5px; font-weight: 500;
+      letter-spacing: .2px; transition: all .22s ease; white-space: nowrap;
+      position: relative;
+    }
+    .nav-item svg { width: 18px; height: 18px; stroke-width: 1.8; transition: all .22s; }
+    .nav-item:hover { background: var(--teal-pale); color: var(--teal); }
+    .nav-item:hover svg { stroke: var(--teal); transform: translateY(-1px); }
+    .nav-item.active { background: var(--teal-pale); color: var(--teal); font-weight: 600; }
+    .nav-item.active svg { stroke: var(--teal); }
+    .nav-item.active::after {
+      content: ''; position: absolute; bottom: 4px;
+      width: 18px; height: 2px; border-radius: 2px;
+      background: var(--teal);
+    }
+ 
+    .nav-signout {
+      flex-shrink: 0; margin-left: 16px;
+      padding: 9px 20px; border-radius: 10px;
+      border: 1.8px solid var(--teal); background: transparent;
+      color: var(--teal); font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all .22s;
+    }
+    .nav-signout:hover {
+      background: var(--teal); color: var(--white);
+      box-shadow: 0 4px 14px rgba(10,123,110,.3);
+    }
+ 
+    /* ════════════════ MAIN ════════════════ */
+    main { position: relative; z-index: 1; padding: 48px 40px 80px; max-width: 1200px; margin: auto; }
+ 
+    /* ── hero card ── */
+    .hero {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 24px;
+      padding: 64px 56px 56px;
+      text-align: center;
+      position: relative; overflow: hidden;
+      box-shadow: 0 8px 48px rgba(10,123,110,.08), 0 1px 4px rgba(10,123,110,.06);
+      animation: heroIn .7s cubic-bezier(.22,.68,0,1.2) both;
+    }
+ 
+    @keyframes heroIn {
+      from { opacity:0; transform: translateY(28px) scale(.98); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+ 
+    /* decorative corner rings */
+    .hero::before, .hero::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      border: 40px solid var(--teal-pale);
+      opacity: .55;
+    }
+    .hero::before { width: 280px; height: 280px; top: -110px; right: -80px; }
+    .hero::after  { width: 200px; height: 200px; bottom: -70px; left: -60px; }
+ 
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 6px 16px; border-radius: 30px;
+      background: var(--teal-pale); border: 1px solid var(--border);
+      font-size: 11px; font-weight: 600; color: var(--teal);
+      letter-spacing: .8px; text-transform: uppercase; margin-bottom: 20px;
+      animation: fadeUp .5s .15s both;
+    }
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); display: inline-block; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+ 
+    .hero-logo {
+      width: 88px; height: 88px; margin: 0 auto 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px;
+      box-shadow: 0 8px 32px rgba(10,123,110,.28), 0 0 0 8px var(--teal-pale);
+      animation: fadeUp .5s .2s both;
+      position: relative; z-index: 1;
+    }
+ 
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(30px, 4vw, 46px);
+      font-weight: 900; color: var(--text);
+      line-height: 1.1; letter-spacing: -.8px;
+      margin-bottom: 16px;
+      animation: fadeUp .5s .28s both;
+      position: relative; z-index: 1;
+    }
+    .hero-title em { color: var(--teal); font-style: normal; }
+ 
+    .hero-desc {
+      max-width: 560px; margin: 0 auto 44px;
+      font-size: 16px; color: var(--muted); line-height: 1.7; font-weight: 400;
+      animation: fadeUp .5s .36s both;
+      position: relative; z-index: 1;
+    }
+ 
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(16px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+ 
+    /* feature cards */
+    .features {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+      position: relative; z-index: 1;
+      animation: fadeUp .5s .44s both;
+    }
+ 
+    .feat {
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 22px;
+      text-align: left; cursor: default;
+      transition: all .25s cubic-bezier(.22,.68,0,1.2);
+      position: relative; overflow: hidden;
+    }
+    .feat::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--teal-pale) 0%, transparent 60%);
+      opacity: 0; transition: opacity .25s;
+    }
+    .feat:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(10,123,110,.12); border-color: var(--teal-light); }
+    .feat:hover::before { opacity: 1; }
+ 
+    .feat-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-light));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(10,123,110,.22);
+      position: relative; z-index: 1;
+    }
+    .feat-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px; font-weight: 700; color: var(--text);
+      margin-bottom: 7px; position: relative; z-index: 1;
+    }
+    .feat-desc {
+      font-size: 13.5px; color: var(--muted); line-height: 1.6;
+      position: relative; z-index: 1;
+    }
+ 
+    /* ── stats strip ── */
+    .stats {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 16px;
+      margin-top: 32px;
+      animation: fadeUp .5s .58s both;
+    }
+    .stat {
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 16px; padding: 22px 20px;
+      text-align: center; transition: transform .22s;
+    }
+    .stat:hover { transform: translateY(-3px); }
+    .stat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px; font-weight: 900; color: var(--teal);
+      line-height: 1; margin-bottom: 6px;
+    }
+    .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: .4px; text-transform: uppercase; }
+ 
+    /* ── quick actions ── */
+    .actions-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 700; color: var(--text);
+      margin: 40px 0 18px;
+      animation: fadeUp .5s .65s both;
+    }
+ 
+    .actions {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 14px;
+      animation: fadeUp .5s .72s both;
+    }
+ 
+    .action-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      padding: 22px 16px; border-radius: 16px;
+      border: 1.5px solid var(--border); background: var(--white);
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 600; color: var(--text);
+      transition: all .25s cubic-bezier(.22,.68,0,1.2);
+      position: relative; overflow: hidden;
+    }
+    .action-btn svg { width: 28px; height: 28px; stroke: var(--teal); stroke-width: 1.6; transition: transform .25s; }
+    .action-btn:hover {
+      border-color: var(--teal-light);
+      background: var(--teal-pale);
+      color: var(--teal);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(10,123,110,.12);
+    }
+    .action-btn:hover svg { transform: scale(1.15); }
+ 
+    /* ── footer note ── */
+    .footer {
+      text-align: center; margin-top: 64px;
+      font-size: 12px; color: var(--muted); letter-spacing: .4px;
+      animation: fadeUp .5s .8s both;
+      position: relative; z-index: 1;
+    }
+    .footer a { color: var(--teal); text-decoration: none; }
+ 
+    /* ── responsive ── */
+    @media (max-width: 900px) {
+      .features { grid-template-columns: 1fr 1fr; }
+      .stats    { grid-template-columns: 1fr 1fr; }
+      .actions  { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      main { padding: 24px 16px 60px; }
+      .hero { padding: 40px 24px 36px; }
+      .features, .stats, .actions { grid-template-columns: 1fr; }
+      .nav-links { gap: 0; }
+      .nav-item { padding: 6px 10px; font-size: 10px; }
+    }
+ 
+    /* ── toast ── */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 999;
+      background: var(--teal); color: var(--white);
+      padding: 13px 22px; border-radius: 12px;
+      font-size: 13.5px; font-weight: 500;
+      box-shadow: 0 8px 28px rgba(10,123,110,.35);
+      transform: translateY(80px); opacity: 0;
+      transition: all .35s cubic-bezier(.22,.68,0,1.2);
+      pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+ 
+<!-- ════ NAV ════ -->
+<nav>
+  <a class="brand" href="#">
+    <div class="brand-logo">🏥</div>
+    <div class="brand-text">
+      <div class="brand-name">MediCare</div>
+      <div class="brand-sub">Healthcare Solutions</div>
+    </div>
+  </a>
+ 
+  <div class="nav-links" id="navLinks">
+    <!-- items injected by JS -->
+  </div>
+ 
+  <button class="nav-signout" onclick="handleSignOut()">Sign Out</button>
+</nav>
+ 
+<!-- ════ MAIN ════ -->
+<main>
+ 
+  <!-- hero -->
+  <section class="hero">
+    <div class="hero-badge"><span></span> Admin Control Panel</div>
+    <div class="hero-logo">🏥</div>
+    <h1 class="hero-title">Welcome to <em>MediCare</em><br>Admin Panel</h1>
+    <p class="hero-desc">
+      Manage hospital operations, doctors, staff, patient records, and system settings from a centralized control panel.
+    </p>
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon">🔒</div>
+        <div class="feat-title">Secure Access</div>
+        <div class="feat-desc">Role-based login with protected medical data and audit trails.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">Real-time Management</div>
+        <div class="feat-desc">Monitor hospital activity and patient flow with live dashboards.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🩺</div>
+        <div class="feat-title">Medical Dashboard</div>
+        <div class="feat-desc">Clean, fast, and doctor-friendly interface built for efficiency.</div>
+      </div>
+    </div>
+  </section>
+ 
+  <!-- stats -->
+  <div class="stats" id="statsRow">
+    <div class="stat"><div class="stat-val" data-target="124">0</div><div class="stat-label">Active Doctors</div></div>
+    <div class="stat"><div class="stat-val" data-target="3842">0</div><div class="stat-label">Patients Served</div></div>
+    <div class="stat"><div class="stat-val" data-target="56">0</div><div class="stat-label">Appointments Today</div></div>
+    <div class="stat"><div class="stat-val" data-target="18">0</div><div class="stat-label">Active Services</div></div>
+  </div>
+ 
+  <!-- quick actions -->
+  <div class="actions-title">Quick Actions</div>
+  <div class="actions" id="quickActions">
+    <!-- injected by JS -->
+  </div>
+ 
+</main>
+ 
+<div class="footer">
+  © 2026 MediCare Healthcare Solutions &nbsp;·&nbsp; <a href="#">Privacy Policy</a> &nbsp;·&nbsp; <a href="#">Support</a>
+</div>
+ 
+<div class="toast" id="toast"></div>
+ 
+<script>
+  /* ─── NAV DATA ─── */
+  const navItems = [
+    { label: 'Dashboard',            active: true,  icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>` },
+    { label: 'Add Doctor',           active: false, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>` },
+    { label: 'List Doctors',         active: false, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>` },
+    { label: 'Appointments',         active: false, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>` },
+    { label: 'Service Dashboard',    active: false, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>` },
+    { label: 'Add Service',          active: false, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>` },
+    { label: 'List Services',        active: false, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>` },
+    { label: 'Service Appointments', active: false, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+    { label: 'Add Schema',           active: false, icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>` },
+  ];
+ 
+  const navLinksEl = document.getElementById('navLinks');
+  navItems.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-item' + (item.active ? ' active' : '');
+    btn.innerHTML = item.icon + `<span>${item.label}</span>`;
+    btn.addEventListener('click', () => {
+      navLinksEl.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showToast(`Navigating to ${item.label}`);
+    });
+    navLinksEl.appendChild(btn);
+  });
+ 
+  /* ─── QUICK ACTIONS ─── */
+  const quickActions = [
+    { label: 'Add New Doctor',    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>` },
+    { label: 'Book Appointment',  icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="10" y1="17" x2="14" y2="17"/></svg>` },
+    { label: 'Add Service',       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>` },
+    { label: 'View Reports',      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>` },
+  ];
+ 
+  const qaEl = document.getElementById('quickActions');
+  quickActions.forEach(a => {
+    const btn = document.createElement('button');
+    btn.className = 'action-btn';
+    btn.innerHTML = a.icon + `<span>${a.label}</span>`;
+    btn.addEventListener('click', () => showToast(`${a.label} — coming soon!`));
+    qaEl.appendChild(btn);
+  });
+ 
+  /* ─── COUNTER ANIMATION ─── */
+  function animateCounters() {
+    document.querySelectorAll('[data-target]').forEach(el => {
+      const target = +el.dataset.target;
+      const duration = 1400;
+      const step = target / (duration / 16);
+      let current = 0;
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = Math.floor(current).toLocaleString();
+        if (current >= target) clearInterval(timer);
+      }, 16);
+    });
+  }
+ 
+  /* observe stats row */
+  const observer = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) { animateCounters(); observer.disconnect(); }
+  }, { threshold: .3 });
+  observer.observe(document.getElementById('statsRow'));
+ 
+  /* ─── TOAST ─── */
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+ 
+  function handleSignOut() {
+    showToast('Signing out… See you soon!');
+  }
+</script>
+<script>
+  /* ══ UNIFIED NAV ROUTING ══ */
+  (function() {
+    var NAV_ROUTES = [
+      { label: 'Dashboard', file: 'DashBoard.html', active: true },
+    { label: 'Add Doctor', file: 'Add-Doctor.html', active: false },
+    { label: 'List Doctors', file: 'list-Doctors.html', active: false },
+    { label: 'Appointments', file: 'appointments.html', active: false },
+    { label: 'Service Dashboard', file: 'Service-Dashboard.html', active: false },
+    { label: 'Add Service', file: 'Add-Service.html', active: false },
+    { label: 'List Services', file: 'list-Services.html', active: false },
+    { label: 'Service Appointments', file: 'Service-Appointments.html', active: false },
+    { label: 'Add Schema', file: 'Add-Schema.html', active: false }
+    ];
+    var navLinksEl = document.getElementById('navLinks');
+    if (!navLinksEl) return;
+    // Clear existing nav buttons and rebuild with routing
+    navLinksEl.innerHTML = '';
+    var icons = {
+      'Dashboard':            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+      'Add Doctor':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>',
+      'List Doctors':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>',
+      'Appointments':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+      'Service Dashboard':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+      'Add Service':          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>',
+      'List Services':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>',
+      'Service Appointments': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      'Add Schema':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>'
+    };
+    NAV_ROUTES.forEach(function(item) {
+      var btn = document.createElement('button');
+      btn.className = 'nav-item' + (item.active ? ' active' : '');
+      btn.innerHTML = (icons[item.label] || '') + '<span>' + item.label + '</span>';
+      btn.addEventListener('click', function() {
+        window.location.href = item.file;
+      });
+      navLinksEl.appendChild(btn);
+    });
+    // Fix Sign Out button
+    var signOutBtns = document.querySelectorAll('.nav-signout');
+    signOutBtns.forEach(function(b) {
+      b.onclick = function() {
+        if (confirm('Are you sure you want to sign out?')) {
+          window.location.href = 'HomePage.html';
+        }
+      };
+    });
+    // Fix brand logo link
+    var brandLinks = document.querySelectorAll('.brand');
+    brandLinks.forEach(function(b) { b.href = 'DashBoard.html'; });
+  })();
+  /* ══ END UNIFIED NAV ══ */
+</script>
+<script>
+  /* ── Fix Quick Actions & stat cards ── */
+  document.addEventListener('DOMContentLoaded', function() {
+    var qaMap = {
+      'Add New Doctor':   'Add-Doctor.html',
+      'Book Appointment': 'appointments.html',
+      'Add Service':      'Add-Service.html',
+      'View Reports':     'Service-Dashboard.html'
+    };
+    document.querySelectorAll('.action-btn').forEach(function(btn) {
+      var label = btn.querySelector('span') ? btn.querySelector('span').textContent.trim() : '';
+      if (qaMap[label]) {
+        btn.onclick = function() { window.location.href = qaMap[label]; };
+      }
+    });
+  });
+</script>
+</body>
+</html

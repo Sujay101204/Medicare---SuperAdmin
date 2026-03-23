@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MediCare – Add Service</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+    :root {
+      --teal:        #0a7b6e;
+      --teal-light:  #12a898;
+      --teal-pale:   #e6f5f3;
+      --cream:       #f8f6f1;
+      --text:        #1a2630;
+      --muted:       #5e7180;
+      --border:      #cfe4e1;
+      --white:       #ffffff;
+      --error:       #e84b4b;
+      --warn:        #c9973b;
+      --success:     #2ecc71;
+      --nav-h:       72px;
+    }
+ 
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: .3;
+      pointer-events: none;
+      z-index: 0;
+    }
+ 
+    /* ══ NAV ══ */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: rgba(248,246,241,.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1.5px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 24px;
+      box-shadow: 0 2px 24px rgba(10,123,110,.07);
+    }
+    .brand { display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0;margin-right:18px; }
+    .brand-logo {
+      width:42px;height:42px;border-radius:50%;
+      background:linear-gradient(135deg,var(--teal),var(--teal-light));
+      display:flex;align-items:center;justify-content:center;
+      font-size:20px;box-shadow:0 4px 14px rgba(10,123,110,.3);
+    }
+    .brand-name { font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--teal); }
+    .brand-sub  { font-size:10px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase; }
+    .nav-links  { display:flex;align-items:center;gap:1px;flex:1;overflow-x:auto;scrollbar-width:none; }
+    .nav-links::-webkit-scrollbar { display:none; }
+    .nav-item {
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      padding:7px 11px;border-radius:10px;cursor:pointer;
+      border:none;background:transparent;color:var(--muted);
+      font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:500;
+      white-space:nowrap;position:relative;transition:all .2s;
+    }
+    .nav-item svg { width:16px;height:16px;stroke-width:1.8;stroke:currentColor;fill:none; }
+    .nav-item:hover { background:var(--teal-pale);color:var(--teal); }
+    .nav-item.active { background:var(--teal-pale);color:var(--teal);font-weight:600; }
+    .nav-item.active::after {
+      content:'';position:absolute;bottom:4px;
+      width:14px;height:2px;border-radius:2px;background:var(--teal);
+    }
+    .nav-right { display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px; }
+    .nav-schema-btn {
+      padding:8px 16px;border-radius:10px;
+      border:1.8px solid var(--border);background:var(--white);
+      color:var(--text);font-family:'DM Sans',sans-serif;
+      font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;
+      display:flex;align-items:center;gap:6px;
+    }
+    .nav-schema-btn svg { width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8; }
+    .nav-schema-btn:hover { border-color:var(--teal);color:var(--teal); }
+    .nav-signout {
+      padding:8px 18px;border-radius:10px;
+      border:1.8px solid var(--teal);background:transparent;color:var(--teal);
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .nav-signout:hover { background:var(--teal);color:var(--white); }
+ 
+    /* ══ MAIN ══ */
+    main { position:relative;z-index:1;padding:36px 40px 80px;max-width:1100px;margin:auto; }
+ 
+    @keyframes fadeUp {
+      from { opacity:0;transform:translateY(16px); }
+      to   { opacity:1;transform:translateY(0); }
+    }
+    @keyframes popIn {
+      from { opacity:0;transform:scale(.8); }
+      to   { opacity:1;transform:scale(1); }
+    }
+ 
+    /* ══ CARD ══ */
+    .card {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 22px;
+      padding: 36px 36px 32px;
+      box-shadow: 0 8px 48px rgba(10,123,110,.07);
+      animation: fadeUp .5s .1s both;
+    }
+ 
+    /* card header */
+    .card-head {
+      display:flex;align-items:flex-start;justify-content:space-between;
+      flex-wrap:wrap;gap:14px;margin-bottom:32px;
+    }
+    .card-head h1 {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(22px,3vw,30px);font-weight:900;color:var(--text);letter-spacing:-.4px;
+    }
+    .card-head p { font-size:13px;color:var(--muted);margin-top:3px; }
+    .head-btns { display:flex;gap:10px;align-items:center; }
+ 
+    .btn-reset {
+      padding:10px 24px;border-radius:30px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;
+      color:var(--muted);cursor:pointer;transition:all .22s;
+    }
+    .btn-reset:hover { border-color:var(--error);color:var(--error); }
+ 
+    .btn-save {
+      padding:10px 26px;border-radius:30px;
+      border:none;background:linear-gradient(135deg,var(--teal),var(--teal-light));
+      font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:700;
+      color:var(--white);cursor:pointer;transition:all .25s;
+      display:flex;align-items:center;gap:8px;
+      box-shadow:0 4px 16px rgba(10,123,110,.25);
+    }
+    .btn-save:hover { transform:translateY(-2px);box-shadow:0 8px 24px rgba(10,123,110,.35); }
+    .btn-save:active { transform:translateY(0); }
+    .btn-save.loading { opacity:.7;pointer-events:none; }
+    .btn-save svg { width:16px;height:16px;stroke:white;fill:none;stroke-width:2; }
+ 
+    /* ══ FORM LAYOUT ══ */
+    .form-layout {
+      display:grid;
+      grid-template-columns:300px 1fr;
+      gap:28px;
+    }
+ 
+    /* ── Left: image upload ── */
+    .upload-col { display:flex;flex-direction:column;gap:14px; }
+ 
+    .image-box {
+      width:100%;aspect-ratio:1;border-radius:16px;
+      border:2.5px dashed var(--border);
+      background:var(--cream);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:12px;cursor:pointer;transition:all .25s;
+      overflow:hidden;position:relative;
+    }
+    .image-box:hover { border-color:var(--teal-light);background:var(--teal-pale); }
+    .image-box .placeholder-icon {
+      width:60px;height:60px;border-radius:12px;
+      background:var(--border);display:flex;align-items:center;justify-content:center;
+    }
+    .image-box .placeholder-icon svg { width:30px;height:30px;stroke:var(--muted);fill:none;stroke-width:1.5; }
+    .image-box .img-label {
+      font-size:13px;color:var(--muted);font-weight:500;text-align:center;line-height:1.5;
+    }
+    .image-box .img-label span { font-size:11px;color:var(--border); }
+    .image-box img {
+      position:absolute;inset:0;width:100%;height:100%;
+      object-fit:cover;border-radius:14px;
+    }
+    .image-box .img-overlay {
+      position:absolute;inset:0;background:rgba(10,123,110,.5);
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;transition:opacity .22s;border-radius:14px;
+      font-size:13px;font-weight:600;color:var(--white);gap:6px;
+    }
+    .image-box:hover .img-overlay { opacity:1; }
+ 
+    #imgFileInput { display:none; }
+ 
+    .upload-btn {
+      width:100%;padding:12px;border-radius:12px;
+      border:1.5px solid var(--teal);background:transparent;
+      font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;
+      color:var(--teal);cursor:pointer;transition:all .22s;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .upload-btn:hover { background:var(--teal);color:var(--white); }
+    .upload-btn svg { width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2; }
+ 
+    .img-hint { font-size:11.5px;color:var(--muted);text-align:center;line-height:1.5; }
+ 
+    /* ── Right: fields ── */
+    .fields-col { display:flex;flex-direction:column;gap:20px; }
+ 
+    .fields-row { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+ 
+    .fg { display:flex;flex-direction:column;gap:6px; }
+    .fg label {
+      font-size:11.5px;font-weight:700;color:var(--muted);
+      letter-spacing:.5px;text-transform:uppercase;
+    }
+    .fg input, .fg select, .fg textarea {
+      width:100%;padding:11px 14px;border-radius:11px;
+      border:1.5px solid var(--border);background:var(--cream);
+      font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);
+      outline:none;transition:all .22s;
+    }
+    .fg input:focus, .fg select:focus, .fg textarea:focus {
+      border-color:var(--teal-light);background:var(--white);
+      box-shadow:0 0 0 3px rgba(18,168,152,.1);
+    }
+    .fg input.err, .fg select.err { border-color:var(--error); }
+    .err-msg { font-size:11px;color:var(--error);display:none; }
+    .has-err .err-msg { display:block; }
+    .has-err input, .has-err select { border-color:var(--error); }
+ 
+    /* price prefix */
+    .price-wrap { position:relative; }
+    .price-wrap .prefix {
+      position:absolute;left:14px;top:50%;transform:translateY(-50%);
+      font-size:14px;color:var(--muted);font-weight:600;pointer-events:none;
+    }
+    .price-wrap input { padding-left:28px; }
+ 
+    /* ── Instructions ── */
+    .instructions-block {
+      background:var(--cream);border:1.5px solid var(--border);
+      border-radius:14px;padding:18px 18px 14px;
+    }
+    .instr-head {
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:12px;
+    }
+    .instr-title {
+      font-size:13px;font-weight:700;color:var(--text);
+      display:flex;align-items:center;gap:7px;
+    }
+    .instr-title svg { width:15px;height:15px;stroke:var(--teal);fill:none;stroke-width:2; }
+    .add-instr-btn {
+      display:flex;align-items:center;gap:5px;
+      padding:5px 14px;border-radius:8px;
+      border:1.5px solid var(--teal);color:var(--teal);
+      background:transparent;font-family:'DM Sans',sans-serif;
+      font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .add-instr-btn:hover { background:var(--teal);color:var(--white); }
+ 
+    .instr-list { display:flex;flex-direction:column;gap:8px; }
+ 
+    .instr-item {
+      display:flex;align-items:center;gap:10px;
+      animation: popIn .2s cubic-bezier(.22,.68,0,1.3) both;
+    }
+    .instr-num {
+      width:24px;height:24px;border-radius:50%;
+      background:var(--teal);color:var(--white);
+      font-size:11px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;
+    }
+    .instr-item input {
+      flex:1;padding:9px 12px;border-radius:9px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+      outline:none;transition:all .2s;
+    }
+    .instr-item input:focus {
+      border-color:var(--teal-light);box-shadow:0 0 0 2px rgba(18,168,152,.1);
+    }
+    .instr-del {
+      width:28px;height:28px;border-radius:50%;
+      border:1.5px solid var(--border);background:transparent;
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;flex-shrink:0;transition:all .2s;color:var(--muted);
+    }
+    .instr-del:hover { border-color:var(--error);color:var(--error); }
+    .instr-del svg { width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5; }
+ 
+    /* ══ SLOTS SECTION ══ */
+    .slots-section {
+      background:var(--cream);border:1.5px solid var(--border);
+      border-radius:14px;padding:20px 18px 16px;
+    }
+    .slots-head {
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:16px;
+    }
+    .slots-title {
+      display:flex;align-items:center;gap:8px;
+      font-family:'Playfair Display',serif;
+      font-size:15px;font-weight:700;color:var(--text);
+    }
+    .slots-title svg { width:16px;height:16px;stroke:var(--teal);fill:none;stroke-width:1.8; }
+    .add-slot-text {
+      font-size:12.5px;font-weight:600;color:var(--teal);cursor:pointer;
+      display:flex;align-items:center;gap:4px;
+      padding:4px 0;border:none;background:none;font-family:'DM Sans',sans-serif;
+      transition:opacity .2s;
+    }
+    .add-slot-text:hover { opacity:.7; }
+ 
+    /* slot builder row */
+    .slot-builder {
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr 80px 70px 70px;
+      gap:10px;margin-bottom:14px;align-items:end;
+    }
+    .sb-fg { display:flex;flex-direction:column;gap:5px; }
+    .sb-fg label { font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.4px;text-transform:uppercase; }
+    .sb-fg input, .sb-fg select {
+      width:100%;padding:10px 12px;border-radius:10px;
+      border:1.5px solid var(--border);background:var(--white);
+      font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);
+      outline:none;transition:all .2s;
+    }
+    .sb-fg input:focus, .sb-fg select:focus {
+      border-color:var(--teal-light);box-shadow:0 0 0 2px rgba(18,168,152,.1);
+    }
+ 
+    .add-slot-btn {
+      width:100%;padding:11px;border-radius:12px;
+      background:linear-gradient(135deg,var(--teal),var(--teal-light));
+      color:var(--white);border:none;
+      font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;
+      cursor:pointer;transition:all .22s;
+      display:flex;align-items:center;justify-content:center;gap:7px;
+      grid-column:1/-1;
+      box-shadow:0 4px 14px rgba(10,123,110,.2);
+    }
+    .add-slot-btn:hover { transform:translateY(-1px);box-shadow:0 6px 20px rgba(10,123,110,.3); }
+    .add-slot-btn svg { width:15px;height:15px;stroke:white;fill:none;stroke-width:2.5; }
+ 
+    /* added slots display */
+    .slots-info {
+      font-size:12px;color:var(--muted);font-weight:600;
+      margin-bottom:8px;
+    }
+    .slots-info strong { color:var(--teal); }
+ 
+    .no-slots-msg { font-size:12.5px;color:var(--muted);font-style:italic; }
+ 
+    .slots-tags { display:flex;flex-wrap:wrap;gap:8px; }
+    .slot-tag {
+      display:inline-flex;align-items:center;gap:7px;
+      padding:6px 13px;border-radius:20px;
+      background:var(--teal-pale);border:1px solid var(--border);
+      font-size:12px;color:var(--teal);font-weight:500;
+      animation: popIn .2s cubic-bezier(.22,.68,0,1.3) both;
+    }
+    .slot-tag-remove {
+      background:none;border:none;cursor:pointer;
+      color:var(--muted);font-size:14px;line-height:1;
+      transition:color .15s;padding:0;
+    }
+    .slot-tag-remove:hover { color:var(--error); }
+ 
+    /* ══ SERVICES LIST ══ */
+    .services-section {
+      margin-top:36px;
+      animation: fadeUp .5s .35s both;
+    }
+    .list-header {
+      display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;
+    }
+    .list-title {
+      font-family:'Playfair Display',serif;
+      font-size:22px;font-weight:800;color:var(--text);
+    }
+    .list-badge {
+      padding:4px 14px;border-radius:20px;
+      background:var(--teal-pale);border:1px solid var(--border);
+      font-size:12px;color:var(--teal);font-weight:600;
+    }
+ 
+    .services-grid {
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;
+    }
+ 
+    .svc-card {
+      background:var(--white);border:1.5px solid var(--border);
+      border-radius:16px;overflow:hidden;
+      transition:all .25s cubic-bezier(.22,.68,0,1.2);
+      animation: fadeUp .4s both;
+    }
+    .svc-card:hover { transform:translateY(-3px);box-shadow:0 10px 30px rgba(10,123,110,.1);border-color:var(--teal-light); }
+ 
+    .svc-img {
+      width:100%;height:130px;object-fit:cover;
+      background:linear-gradient(135deg,var(--teal-pale),rgba(18,168,152,.2));
+      display:flex;align-items:center;justify-content:center;
+      font-size:44px;
+    }
+    .svc-img img { width:100%;height:100%;object-fit:cover; }
+ 
+    .svc-body { padding:16px; }
+    .svc-top {
+      display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;
+    }
+    .svc-name {
+      font-family:'Playfair Display',serif;
+      font-size:15px;font-weight:700;color:var(--text);
+    }
+    .svc-avail {
+      padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:700;
+      letter-spacing:.3px;text-transform:uppercase;flex-shrink:0;
+    }
+    .avail-available { background:rgba(46,204,113,.12);color:#1a9950;border:1px solid rgba(46,204,113,.25); }
+    .avail-unavailable { background:#fdf0f0;color:var(--error);border:1px solid rgba(232,75,75,.2); }
+ 
+    .svc-price {
+      font-family:'Playfair Display',serif;
+      font-size:20px;font-weight:900;color:var(--teal);margin-bottom:10px;
+    }
+    .svc-slots-count {
+      font-size:12px;color:var(--muted);margin-bottom:10px;
+    }
+    .svc-instrs {
+      list-style:none;display:flex;flex-direction:column;gap:4px;margin-bottom:12px;
+    }
+    .svc-instrs li {
+      font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;
+    }
+    .svc-instrs li::before {
+      content:'';width:5px;height:5px;border-radius:50%;
+      background:var(--teal);flex-shrink:0;
+    }
+    .svc-del-btn {
+      width:100%;padding:7px;border-radius:9px;
+      border:1.5px solid var(--error);color:var(--error);
+      background:transparent;font-family:'DM Sans',sans-serif;
+      font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;
+    }
+    .svc-del-btn:hover { background:var(--error);color:var(--white); }
+ 
+    /* empty */
+    .empty-state {
+      grid-column:1/-1;text-align:center;padding:56px 20px;
+      border:1.5px dashed var(--border);border-radius:16px;background:var(--white);
+    }
+    .empty-icon  { font-size:48px;margin-bottom:12px;opacity:.35; }
+    .empty-title { font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px; }
+    .empty-sub   { font-size:13px;color:var(--muted); }
+ 
+    /* ══ TOAST ══ */
+    .toast {
+      position:fixed;bottom:26px;right:26px;z-index:999;
+      padding:12px 20px;border-radius:12px;
+      font-size:13.5px;font-weight:500;color:var(--white);
+      box-shadow:0 8px 28px rgba(0,0,0,.15);
+      transform:translateY(80px);opacity:0;
+      transition:all .33s cubic-bezier(.22,.68,0,1.2);pointer-events:none;
+    }
+    .toast.show { transform:translateY(0);opacity:1; }
+    .toast.success { background:var(--teal); }
+    .toast.error   { background:var(--error); }
+    .toast.warn    { background:var(--warn); }
+ 
+    @media(max-width:860px){
+      .form-layout { grid-template-columns:1fr; }
+      .upload-col { flex-direction:row;align-items:center;gap:20px; }
+      .image-box { width:140px;height:140px;flex-shrink:0; }
+      .slot-builder { grid-template-columns:1fr 1fr 1fr; }
+    }
+    @media(max-width:580px){
+      main { padding:20px 14px 60px; }
+      .card { padding:22px 16px; }
+      .fields-row { grid-template-columns:1fr; }
+      .upload-col { flex-direction:column; }
+      .image-box { width:100%; }
+      .slot-builder { grid-template-columns:1fr 1fr; }
+      .nav-item { padding:6px 8px;font-size:10px; }
+    }
+  </style>
+</head>
+<body>
+ 
+<!-- NAV -->
+<nav>
+  <a class="brand" href="#">
+    <div class="brand-logo">🏥</div>
+    <div>
+      <div class="brand-name">MediCare</div>
+      <div class="brand-sub">Healthcare Solutions</div>
+    </div>
+  </a>
+  <div class="nav-links" id="navLinks"></div>
+  <div class="nav-right">
+    <button class="nav-schema-btn" onclick="showToast('Add Schema — coming soon!','warn')">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+      Add Schema
+    </button>
+    <button class="nav-signout" onclick="showToast('Signing out…','success')">Sign Out</button>
+  </div>
+</nav>
+ 
+<main>
+  <div class="card">
+    <!-- Header -->
+    <div class="card-head">
+      <div>
+        <h1>Add Service</h1>
+        <p>Create a beautiful service card with unique time slots</p>
+      </div>
+      <div class="head-btns">
+        <button class="btn-reset" onclick="resetForm()">Reset</button>
+        <button class="btn-save" id="saveBtn" onclick="saveService()">
+          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span id="saveBtnText">Save Service</span>
+        </button>
+      </div>
+    </div>
+ 
+    <!-- Form Layout -->
+    <div class="form-layout">
+ 
+      <!-- LEFT: Image -->
+      <div class="upload-col">
+        <div class="image-box" id="imageBox" onclick="document.getElementById('imgFileInput').click()">
+          <div class="placeholder-icon" id="imgPlaceholder">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div class="img-label" id="imgLabel">Service image (required)<br><span>JPG, PNG · Max 3MB</span></div>
+          <img id="previewImg" src="" alt="" style="display:none;"/>
+          <div class="img-overlay" id="imgOverlay">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Change image
+          </div>
+        </div>
+        <button class="upload-btn" onclick="document.getElementById('imgFileInput').click()">
+          <svg viewBox="0 0 24 24"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          + Upload Image
+        </button>
+        <div class="img-hint">Click the image area or button to upload.<br>Recommended: 400×400px square.</div>
+        <input type="file" id="imgFileInput" accept="image/*" onchange="handleImageUpload(event)"/>
+      </div>
+ 
+      <!-- RIGHT: Fields -->
+      <div class="fields-col">
+        <div class="fields-row">
+          <div class="fg" id="fg-name">
+            <label>Service Name *</label>
+            <input type="text" id="svcName" placeholder="e.g. General Consultation"/>
+            <span class="err-msg">Service name is required.</span>
+          </div>
+          <div class="fg" id="fg-price">
+            <label>Price *</label>
+            <div class="price-wrap">
+              <span class="prefix">₹</span>
+              <input type="number" id="svcPrice" placeholder="499" min="0"/>
+            </div>
+            <span class="err-msg">Enter a valid price.</span>
+          </div>
+        </div>
+ 
+        <!-- Instructions -->
+        <div class="instructions-block">
+          <div class="instr-head">
+            <div class="instr-title">
+              <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>
+              Instructions (point wise)
+            </div>
+            <button class="add-instr-btn" onclick="addInstruction()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Point
+            </button>
+          </div>
+          <div class="instr-list" id="instrList"></div>
+        </div>
+ 
+        <!-- Availability -->
+        <div class="fg">
+          <label>Availability</label>
+          <select id="svcAvail">
+            <option value="available">Available</option>
+            <option value="unavailable">Unavailable</option>
+          </select>
+        </div>
+ 
+        <!-- Slots Section -->
+        <div class="slots-section">
+          <div class="slots-head">
+            <div class="slots-title">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Slots & Schedule
+            </div>
+            <button class="add-slot-text" onclick="addSlot()">
+              + Add
+            </button>
+          </div>
+ 
+          <div class="slot-builder">
+            <div class="sb-fg">
+              <label>Day</label>
+              <input type="number" id="slDay" placeholder="15" min="1" max="31"/>
+            </div>
+            <div class="sb-fg">
+              <label>Month</label>
+              <select id="slMonth">
+                <option value="Jan">Jan</option><option value="Feb">Feb</option>
+                <option value="Mar" selected>Mar</option><option value="Apr">Apr</option>
+                <option value="May">May</option><option value="Jun">Jun</option>
+                <option value="Jul">Jul</option><option value="Aug">Aug</option>
+                <option value="Sep">Sep</option><option value="Oct">Oct</option>
+                <option value="Nov">Nov</option><option value="Dec">Dec</option>
+              </select>
+            </div>
+            <div class="sb-fg">
+              <label>Year</label>
+              <input type="number" id="slYear" placeholder="2026" min="2024" max="2030" value="2026"/>
+            </div>
+            <div class="sb-fg">
+              <label>Hour</label>
+              <select id="slHour">
+                <option>01</option><option>02</option><option>03</option><option>04</option>
+                <option>05</option><option>06</option><option>07</option><option>08</option>
+                <option>09</option><option>10</option><option selected>11</option><option>12</option>
+              </select>
+            </div>
+            <div class="sb-fg">
+              <label>Minute</label>
+              <select id="slMin">
+                <option selected>00</option><option>15</option>
+                <option>30</option><option>45</option>
+              </select>
+            </div>
+            <div class="sb-fg">
+              <label>AM/PM</label>
+              <select id="slPeriod">
+                <option>AM</option><option>PM</option>
+              </select>
+            </div>
+            <button class="add-slot-btn" onclick="addSlot()">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              + Add This Time Slot
+            </button>
+          </div>
+ 
+          <div class="slots-info">Added Slots (<strong id="slotsCount">0</strong>)</div>
+          <div id="slotsDisplay"><div class="no-slots-msg">No slots added yet. Select a time and click + Add This Time Slot.</div></div>
+        </div>
+ 
+      </div><!-- /fields-col -->
+    </div><!-- /form-layout -->
+  </div><!-- /card -->
+ 
+  <!-- Services List -->
+  <div class="services-section">
+    <div class="list-header">
+      <div class="list-title">Saved Services</div>
+      <div class="list-badge" id="svcCount">0 services</div>
+    </div>
+    <div class="services-grid" id="servicesGrid">
+      <div class="empty-state">
+        <div class="empty-icon">🏥</div>
+        <div class="empty-title">No services yet</div>
+        <div class="empty-sub">Add your first service using the form above.</div>
+      </div>
+    </div>
+  </div>
+ 
+</main>
+ 
+<div class="toast" id="toast"></div>
+ 
+<script>
+/* ── NAV ── */
+const NAV_DATA = [
+  { l:'Dashboard', a:false, i:`<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>` },
+  { l:'Add Doctor', a:false, i:`<svg viewBox="0 0 24 24"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>` },
+  { l:'List Doctors', a:false, i:`<svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>` },
+  { l:'Appointments', a:false, i:`<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>` },
+  { l:'Service Dashboard', a:false, i:`<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>` },
+  { l:'Add Service', a:true, i:`<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>` },
+  { l:'List Services', a:false, i:`<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>` },
+  { l:'Service Appointments', a:false, i:`<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+];
+const navEl = document.getElementById('navLinks');
+NAV_DATA.forEach(item => {
+  const b = document.createElement('button');
+  b.className = 'nav-item' + (item.a ? ' active' : '');
+  b.innerHTML = item.i + `<span>${item.l}</span>`;
+  b.onclick = () => { navEl.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); b.classList.add('active'); };
+  navEl.appendChild(b);
+});
+ 
+/* ── STATE ── */
+let uploadedImageSrc = null;
+let instructions = [''];
+let slots = [];
+let services = [];
+ 
+/* ── IMAGE UPLOAD ── */
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { showToast('Image too large (max 3MB).', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    uploadedImageSrc = ev.target.result;
+    document.getElementById('imgPlaceholder').style.display = 'none';
+    document.getElementById('imgLabel').style.display = 'none';
+    const img = document.getElementById('previewImg');
+    img.src = uploadedImageSrc;
+    img.style.display = 'block';
+    document.getElementById('imgOverlay').style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+ 
+/* ── INSTRUCTIONS ── */
+function renderInstructions() {
+  const list = document.getElementById('instrList');
+  list.innerHTML = '';
+  instructions.forEach((val, i) => {
+    const row = document.createElement('div');
+    row.className = 'instr-item';
+    row.innerHTML = `
+      <div class="instr-num">${i + 1}</div>
+      <input type="text" value="${val}" placeholder="Instruction ${i + 1}"
+        oninput="instructions[${i}] = this.value"/>
+      <button class="instr-del" onclick="removeInstruction(${i})">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>`;
+    list.appendChild(row);
+  });
+}
+ 
+function addInstruction() {
+  instructions.push('');
+  renderInstructions();
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('.instr-item input');
+    inputs[inputs.length - 1]?.focus();
+  }, 60);
+}
+ 
+function removeInstruction(i) {
+  if (instructions.length === 1) { instructions[0] = ''; renderInstructions(); return; }
+  instructions.splice(i, 1);
+  renderInstructions();
+}
+ 
+/* ── SLOTS ── */
+function addSlot() {
+  const day    = document.getElementById('slDay').value.trim();
+  const month  = document.getElementById('slMonth').value;
+  const year   = document.getElementById('slYear').value.trim();
+  const hour   = document.getElementById('slHour').value;
+  const min    = document.getElementById('slMin').value;
+  const period = document.getElementById('slPeriod').value;
+ 
+  if (!day || !year) { showToast('Please enter day and year.', 'error'); return; }
+  if (+day < 1 || +day > 31) { showToast('Day must be between 1 and 31.', 'error'); return; }
+ 
+  const label = `${String(day).padStart(2,'0')} ${month} ${year} · ${hour}:${min} ${period}`;
+  if (slots.includes(label)) { showToast('This slot is already added.', 'warn'); return; }
+ 
+  slots.push(label);
+  renderSlots();
+  document.getElementById('slDay').value = '';
+}
+ 
+function removeSlot(i) {
+  slots.splice(i, 1);
+  renderSlots();
+}
+ 
+function renderSlots() {
+  document.getElementById('slotsCount').textContent = slots.length;
+  const el = document.getElementById('slotsDisplay');
+  if (!slots.length) {
+    el.innerHTML = '<div class="no-slots-msg">No slots added yet. Select a time and click + Add This Time Slot.</div>';
+    return;
+  }
+  el.innerHTML = `<div class="slots-tags">${
+    slots.map((s, i) => `
+      <div class="slot-tag">
+        📅 ${s}
+        <button class="slot-tag-remove" onclick="removeSlot(${i})">✕</button>
+      </div>`).join('')
+  }</div>`;
+}
+ 
+/* ── VALIDATION ── */
+function validate() {
+  let ok = true;
+  const rules = [
+    { id: 'svcName',  fgId: 'fg-name',  test: v => v.trim().length >= 2 },
+    { id: 'svcPrice', fgId: 'fg-price', test: v => v !== '' && +v >= 0 },
+  ];
+  rules.forEach(r => {
+    const inp = document.getElementById(r.id);
+    const fg  = document.getElementById(r.fgId);
+    if (!r.test(inp.value)) {
+      fg.classList.add('has-err');
+      ok = false;
+    } else {
+      fg.classList.remove('has-err');
+    }
+  });
+  if (!uploadedImageSrc) {
+    document.getElementById('imageBox').style.borderColor = 'var(--error)';
+    showToast('Please upload a service image.', 'error');
+    ok = false;
+  } else {
+    document.getElementById('imageBox').style.borderColor = '';
+  }
+  return ok;
+}
+ 
+/* live clear */
+['svcName','svcPrice'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    const fg = document.getElementById('fg-' + (id === 'svcName' ? 'name' : 'price'));
+    fg?.classList.remove('has-err');
+  });
+});
+ 
+/* ── SAVE ── */
+function saveService() {
+  if (!validate()) return;
+ 
+  const btn = document.getElementById('saveBtn');
+  btn.classList.add('loading');
+  document.getElementById('saveBtnText').textContent = 'Saving…';
+ 
+  setTimeout(() => {
+    const svc = {
+      id:      Date.now(),
+      name:    document.getElementById('svcName').value.trim(),
+      price:   +document.getElementById('svcPrice').value,
+      avail:   document.getElementById('svcAvail').value,
+      instrs:  instructions.filter(i => i.trim()),
+      slots:   [...slots],
+      image:   uploadedImageSrc,
+    };
+    services.unshift(svc);
+    renderServices();
+    resetForm();
+    btn.classList.remove('loading');
+    document.getElementById('saveBtnText').textContent = 'Save Service';
+    showToast(`"${svc.name}" saved successfully! 🎉`, 'success');
+    window.scrollTo({ top: document.querySelector('.services-section').offsetTop - 20, behavior: 'smooth' });
+  }, 800);
+}
+ 
+/* ── RESET ── */
+function resetForm() {
+  document.getElementById('svcName').value  = '';
+  document.getElementById('svcPrice').value = '';
+  document.getElementById('svcAvail').value = 'available';
+  uploadedImageSrc = null;
+  document.getElementById('imgPlaceholder').style.display = '';
+  document.getElementById('imgLabel').style.display = '';
+  document.getElementById('imgOverlay').style.display = 'none';
+  const img = document.getElementById('previewImg');
+  img.src = ''; img.style.display = 'none';
+  document.getElementById('imageBox').style.borderColor = '';
+  document.getElementById('imgFileInput').value = '';
+  instructions = [''];
+  renderInstructions();
+  slots = [];
+  renderSlots();
+  document.getElementById('slDay').value = '';
+  document.getElementById('slYear').value = '2026';
+  ['fg-name','fg-price'].forEach(id => document.getElementById(id)?.classList.remove('has-err'));
+}
+ 
+/* ── RENDER SERVICES ── */
+function renderServices() {
+  const grid = document.getElementById('servicesGrid');
+  document.getElementById('svcCount').textContent = `${services.length} service${services.length !== 1 ? 's' : ''}`;
+  grid.innerHTML = '';
+ 
+  if (!services.length) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🏥</div>
+        <div class="empty-title">No services yet</div>
+        <div class="empty-sub">Add your first service using the form above.</div>
+      </div>`;
+    return;
+  }
+ 
+  services.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'svc-card';
+    card.style.animationDelay = `${i * .07}s`;
+ 
+    const instrHTML = s.instrs.length
+      ? `<ul class="svc-instrs">${s.instrs.slice(0,3).map(t=>`<li>${t}</li>`).join('')}${s.instrs.length>3?`<li style="color:var(--teal)">+${s.instrs.length-3} more…</li>`:''}</ul>`
+      : '';
+ 
+    card.innerHTML = `
+      <div class="svc-img">
+        ${s.image ? `<img src="${s.image}" alt="${s.name}"/>` : '🏥'}
+      </div>
+      <div class="svc-body">
+        <div class="svc-top">
+          <div class="svc-name">${s.name}</div>
+          <span class="svc-avail avail-${s.avail}">${s.avail}</span>
+        </div>
+        <div class="svc-price">₹${s.price.toLocaleString()}</div>
+        ${instrHTML}
+        <div class="svc-slots-count">📅 ${s.slots.length} slot${s.slots.length !== 1 ? 's' : ''} scheduled</div>
+        <button class="svc-del-btn" onclick="deleteService(${s.id})">Remove Service</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+ 
+function deleteService(id) {
+  const s = services.find(x => x.id === id);
+  services = services.filter(x => x.id !== id);
+  renderServices();
+  showToast(`"${s?.name}" removed.`, 'error');
+}
+ 
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+ 
+/* ── INIT ── */
+renderInstructions();
+renderSlots();
+renderServices();
+</script>
+<script>
+  /* ══ UNIFIED NAV ROUTING ══ */
+  (function() {
+    var NAV_ROUTES = [
+      { label: 'Dashboard', file: 'DashBoard.html', active: false },
+    { label: 'Add Doctor', file: 'Add-Doctor.html', active: false },
+    { label: 'List Doctors', file: 'list-Doctors.html', active: false },
+    { label: 'Appointments', file: 'appointments.html', active: false },
+    { label: 'Service Dashboard', file: 'Service-Dashboard.html', active: false },
+    { label: 'Add Service', file: 'Add-Service.html', active: true },
+    { label: 'List Services', file: 'list-Services.html', active: false },
+    { label: 'Service Appointments', file: 'Service-Appointments.html', active: false },
+    { label: 'Add Schema', file: 'Add-Schema.html', active: false }
+    ];
+    var navLinksEl = document.getElementById('navLinks');
+    if (!navLinksEl) return;
+    // Clear existing nav buttons and rebuild with routing
+    navLinksEl.innerHTML = '';
+    var icons = {
+      'Dashboard':            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+      'Add Doctor':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="10" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 12.95-6.3"/><line x1="19" y1="13" x2="19" y2="19"/><line x1="16" y1="16" x2="22" y2="16"/></svg>',
+      'List Doctors':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a8 8 0 0 1 16 0v2"/></svg>',
+      'Appointments':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+      'Service Dashboard':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+      'Add Service':          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14"/></svg>',
+      'List Services':        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>',
+      'Service Appointments': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      'Add Schema':           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>'
+    };
+    NAV_ROUTES.forEach(function(item) {
+      var btn = document.createElement('button');
+      btn.className = 'nav-item' + (item.active ? ' active' : '');
+      btn.innerHTML = (icons[item.label] || '') + '<span>' + item.label + '</span>';
+      btn.addEventListener('click', function() {
+        window.location.href = item.file;
+      });
+      navLinksEl.appendChild(btn);
+    });
+    // Fix Sign Out button
+    var signOutBtns = document.querySelectorAll('.nav-signout');
+    signOutBtns.forEach(function(b) {
+      b.onclick = function() {
+        if (confirm('Are you sure you want to sign out?')) {
+          window.location.href = 'HomePage.html';
+        }
+      };
+    });
+    // Fix brand logo link
+    var brandLinks = document.querySelectorAll('.brand');
+    brandLinks.forEach(function(b) { b.href = 'DashBoard.html'; });
+  })();
+  /* ══ END UNIFIED NAV ══ */
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('button, a').forEach(function(el) {
+      var txt = el.textContent.trim().toLowerCase();
+      if (txt.indexOf('list service') !== -1 || txt.indexOf('view service') !== -1) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = 'list-Services.html';
+        });
+      }
+      if (txt.indexOf('add schema') !== -1) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          window.location.href = 'Add-Schema.html';
+        });
+      }
+    });
+  });
+</script>
+</body>
+</html>
